@@ -591,7 +591,7 @@ function buildVideoPrompt(){
   else if(currentAction!==baseline) additional=currentAction;
  }
  let norm=x=>String(x||'').toLowerCase().replace(/\\s+/g,' ').trim();
- let known=new Set([...sceneParts,...cameraParts,...audioParts,...(s?[s.action,s.emotion,s.gesture,s.dialogue,s.delivery]:[])].filter(Boolean).map(norm));
+ let known=new Set([...sceneContext,...beatActions,...beatEmotions,...sceneActions,...sceneEmotions,...sceneGestures,...cameraParts,...audioParts,...(s?[s.dialogue,s.delivery]:[])].filter(Boolean).map(norm));
  additional=additional.split(/\n+/).map(x=>x.trim()).filter(x=>x&&!known.has(norm(x))).join('\n');
  let sceneDirection=[...sceneActions.map(x=>'Character action: '+x),...sceneEmotions.map(x=>'Emotional direction: '+x),...sceneGestures.map(x=>'Facial expression and gestures: '+x)].join('\n');
  let negative=v('vidNegative')||'Face distortion, identity drift, inconsistent facial features, changing hairstyle, changing skin tone, incorrect body proportions, wardrobe changes, extra fingers, extra limbs, duplicate characters, unnatural motion, flickering, blurry details, unstable camera, warped background, sudden lighting changes, unrealistic physics.';

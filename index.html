@@ -565,12 +565,22 @@ function buildVideoPrompt(){
  let projectAssets=(db.assets||[]).filter(a=>project&&a.projectId===project.id&&(!a.characterId||cast.some(c=>c.id===a.characterId)));
  let locRef=loc?loc.name+' [Location ID: '+loc.id+']\nEnvironment: '+clean(loc.environment)+'\nLighting: '+clean(loc.lighting)+'\nAtmosphere: '+clean(loc.atmosphere)+'\nLocation continuity: preserve the approved layout, architecture, props, geography and lighting logic.':clean(v('vidLocation'),'No location reference selected.');
  let assetRefs=projectAssets.map(a=>'- '+(a.name||a.title||'Asset')+' ['+(a.category||a.type||'Reference')+'; Asset ID: '+a.id+']: '+clean(a.notes||a.description,'Project visual reference.')).join('\n');
- let beats=(s?.storyBeats||[]).map((b,i)=>(i+1)+'. '+(b.title||'Beat '+(i+1))+'\nAction: '+clean(b.action||b.description,'No specific action supplied.')+'\nEmotional change: '+clean(b.emotion,'Not specified.')).join('\n\n');
+ const normalizePromptText=x=>String(x||'').toLowerCase().replace(/\s+/g,' ').trim();
+ const uniquePromptValues=values=>{let seen=new Set();return values.filter(x=>{let value=String(x||'').trim(),key=normalizePromptText(value);if(!key||seen.has(key))return false;seen.add(key);return true})};
+ let beats=(s?.storyBeats||[]).map((b,i)=>{
+  let action=uniquePromptValues([b.action,b.description]);
+  return (i+1)+'. '+(b.title||'Beat '+(i+1))+(action.length?'\nAction: '+action.join('\n'):'')+(b.emotion?'\nEmotional change: '+b.emotion:'');
+ }).join('\n\n');
  let dialogue=(s?.dialogueEntries||[]).map(d=>{
   let speaker=d.characterName||db.characters.find(c=>c.id===d.characterId)?.name||'Character';
   return speaker+': "'+(d.text||'')+'"'+(d.delivery?' (Delivery: '+d.delivery+')':'');
  }).join('\n');
- let sceneParts=s?[s.storyNotes,s.description].filter(Boolean):[];
+ let beatActions=(s?.storyBeats||[]).flatMap(b=>[b.action,b.description]).filter(Boolean);
+ let beatEmotions=(s?.storyBeats||[]).map(b=>b.emotion).filter(Boolean);
+ let sceneContext=uniquePromptValues([s?.storyNotes,s?.description]);
+ let sceneActions=uniquePromptValues([s?.action]).filter(x=>!beatActions.some(b=>normalizePromptText(b)===normalizePromptText(x)));
+ let sceneEmotions=uniquePromptValues([s?.emotion]).filter(x=>!beatEmotions.some(b=>normalizePromptText(b)===normalizePromptText(x)));
+ let sceneGestures=uniquePromptValues([s?.gesture]);
  let cameraParts=s?[s.shot&&'Shot type: '+s.shot,s.angle&&'Camera angle: '+s.angle,s.movement&&'Camera movement: '+s.movement,s.lens&&'Lens: '+s.lens,s.camera].filter(Boolean):[];
  let audioParts=s?[s.music&&'Music: '+s.music,s.ambience&&'Ambience: '+s.ambience,s.sfx&&'SFX: '+s.sfx,s.audio].filter(Boolean):[];
  let baseline=window.videoScenePrefillAction||'';
@@ -583,7 +593,7 @@ function buildVideoPrompt(){
  let norm=x=>String(x||'').toLowerCase().replace(/\\s+/g,' ').trim();
  let known=new Set([...sceneParts,...cameraParts,...audioParts,...(s?[s.action,s.emotion,s.gesture,s.dialogue,s.delivery]:[])].filter(Boolean).map(norm));
  additional=additional.split(/\n+/).map(x=>x.trim()).filter(x=>x&&!known.has(norm(x))).join('\n');
- let sceneDirection=[...sceneParts,...(s?.action?[ 'Character action: '+s.action]:[]),...(s?.emotion?['Emotional direction: '+s.emotion]:[]),...(s?.gesture?['Facial expression and gestures: '+s.gesture]:[])].join('\n');
+ let sceneDirection=[...sceneActions.map(x=>'Character action: '+x),...sceneEmotions.map(x=>'Emotional direction: '+x),...sceneGestures.map(x=>'Facial expression and gestures: '+x)].join('\n');
  let negative=v('vidNegative')||'Face distortion, identity drift, inconsistent facial features, changing hairstyle, changing skin tone, incorrect body proportions, wardrobe changes, extra fingers, extra limbs, duplicate characters, unnatural motion, flickering, blurry details, unstable camera, warped background, sudden lighting changes, unrealistic physics.';
  let out=[
   'AI VIDEO MASTER PRODUCTION PROMPT',

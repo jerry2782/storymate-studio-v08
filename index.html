@@ -512,8 +512,9 @@ async function restore(e){
   }catch(err){console.error(err);toast('Restore gagal: '+(err.message||'file tidak valid'))}
   finally{e.target.value=''}
 }
-function copyText(t){if(!t){toast('Belum ada teks untuk disalin');return}if(navigator.clipboard?.writeText){navigator.clipboard.writeText(t).then(()=>toast('Berhasil disalin')).catch(()=>fallbackCopy(t))}else fallbackCopy(t)}
-function fallbackCopy(t){let a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Berhasil disalin')}
+function normalizePromptLineBreaks(value){return String(value??'').replace(/\\r\\n/g,'\n').replace(/\\n/g,'\n').replace(/\\r/g,'\n')}
+function copyText(t){if(!t){toast('Belum ada teks untuk disalin');return}t=normalizePromptLineBreaks(t);if(navigator.clipboard?.writeText){navigator.clipboard.writeText(t).then(()=>toast('Berhasil disalin')).catch(()=>fallbackCopy(t))}else fallbackCopy(t)}
+function fallbackCopy(t){let a=document.createElement('textarea');a.value=normalizePromptLineBreaks(t);document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Berhasil disalin')}
 
 function activeProjectObj(){return db.projects.find(p=>p.id===db.activeProject)||null}
 function imageStudio(){let proj=activeProjectObj();return `${header('VISUAL DEVELOPMENT','AI Image Studio','Rancang karakter, lokasi, kostum, properti, poster, dan variasi visual. Pilih alur layanan terintegrasi atau layanan eksternal.')}

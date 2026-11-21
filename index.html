@@ -608,6 +608,7 @@ function buildVideoPrompt(){
   'CANONICAL CHARACTER REFERENCES AND SELECTED SCENE VARIATIONS:\n'+(castRefs||v('vidCharacter')||'Use only explicitly approved character references.'),
   'LOCATION DNA REFERENCE:\n'+locRef,
   'PROJECT / CHARACTER ASSET REFERENCES:\n'+(assetRefs||'No additional project-linked assets registered.'),
+  'SCENE CONTEXT / VISUAL SETUP:\n'+(sceneContext.join('\n')||'No additional scene context supplied.'),
   'STORY BEATS / ACTION TIMELINE:\n'+(beats||'No story beats registered.'),
   'DIALOGUE TIMELINE — SPOKEN IN BAHASA INDONESIA:\n'+(dialogue||'No dialogue specified.'),
   'ADDITIONAL SCENE DIRECTION:\n'+(sceneDirection||'No additional scene description supplied.'),

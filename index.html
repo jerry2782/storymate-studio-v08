@@ -597,20 +597,17 @@ function buildVideoPrompt(){
  let beats=(s?.storyBeats||[]).map((b,i)=>{
   let title=String(b.title||'Beat '+(i+1)).trim();
   let actionText=String(b.action||'').trim();
-  if(title)actionText=actionText.replace(new RegExp('^'+title.replace(/[.*+?^${}()|[\]\\]/g,'\\ let beats=(s?.storyBeats||[]).map((b,i)=>{
-  let action=uniquePromptValues([b.action,b.description]);
-  return (i+1)+'. '+(b.title||'Beat '+(i+1))+(action.length?'\nAction: '+action.join('\n'):'')+(b.emotion?'\nEmotional change: '+b.emotion:'');
- }).join('\n\n');')+'\\s*','i'),'');
-  actionText=actionText.replace(/^(?:Action\\s*:\\s*)+/i,'').replace(/\\s*Emotional change\\s*:\\s*[\\s\\S]*$/i,'').trim();
+  if(title&&actionText.toLowerCase().startsWith(title.toLowerCase()))actionText=actionText.slice(title.length).trim();
+  actionText=actionText.replace(/^Action\s*:\s*/i,'').replace(/\s*Emotional change\s*:\s*[\s\S]*$/i,'').trim();
   let context=String(b.description||'').trim();
-  if(/^(?:after observing|enzo has|enzo reaches)\\b/i.test(context))context='';
+  if(/^(after observing|enzo has|enzo reaches)\b/i.test(context))context='';
   if(context&&actionText&&normalizePromptText(context)===normalizePromptText(actionText))context='';
   let lines=[(i+1)+'. '+title];
   if(context)lines.push('Moment context: '+context);
   if(actionText)lines.push('Action: '+actionText);
   if(b.emotion)lines.push('Emotional change: '+String(b.emotion).trim());
-  return lines.join('\\n');
- }).join('\\n\\n');
+  return lines.join('\n');
+ }).join('\n\n');
  let dialogue=(s?.dialogueEntries||[]).map(d=>{
   let speaker=d.characterName||db.characters.find(c=>c.id===d.characterId)?.name||'Character';
   return speaker+': "'+(d.text||'')+'"'+(d.delivery?' (Delivery: '+d.delivery+')':'');

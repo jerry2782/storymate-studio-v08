@@ -1,32 +1,23 @@
 {
   "name": "STORYMATE STUDIO",
   "short_name": "Storymate",
-  "description": "Mobile-first cinematic story development and AI film production workspace",
+  "description": "Mobile-first cinematic story and film production workspace",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#080a13",
   "theme_color": "#090b16",
-  "lang": "id",
   "icons": [
     {
       "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }

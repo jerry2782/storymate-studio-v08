@@ -1,22 +1,46 @@
-const CACHE_NAME = 'storymate-studio-v0.8.0.0';
-const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
+const CACHE_NAME = 'storymate-studio-v0.8.0.0-audit4';
+const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try { await cache.addAll(APP_SHELL); }
+    catch (error) { console.warn('App shell cache incomplete', error); }
+  })());
+  self.skipWaiting();
 });
+
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('storymate-studio-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key.startsWith('storymate-studio-') && key !== CACHE_NAME).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
+
 self.addEventListener('fetch', event => {
-  const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  event.respondWith(caches.match(req).then(cached => {
-    if (cached) return cached;
-    return fetch(req).then(response => {
-      if (response && response.ok && (req.mode === 'navigate' || req.destination === 'image' || req.destination === 'style' || req.destination === 'script')) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+  if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+  event.respondWith((async () => {
+    const isNavigation = event.request.mode === 'navigate';
+    try {
+      if (!isNavigation) {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+      }
+      const response = await fetch(event.request);
+      if (response && response.ok && (isNavigation || APP_SHELL.some(path => url.pathname.endsWith(path.replace('./', ''))))) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(event.request, response.clone());
       }
       return response;
-    }).catch(() => caches.match('./index.html'));
-  }));
+    } catch (error) {
+      const cached = await caches.match(event.request);
+      if (cached) return cached;
+      const fallback = await caches.match('./index.html');
+      if (fallback) return fallback;
+      throw error;
+    }
+  })());
 });

@@ -614,7 +614,8 @@ function buildVideoPrompt(){
  }).join('\n');
  let beatActions=(s?.storyBeats||[]).flatMap(b=>[b.action,b.description]).filter(Boolean);
  let beatEmotions=(s?.storyBeats||[]).map(b=>b.emotion).filter(Boolean);
- let sceneContext=uniquePromptValues([s?.storyNotes,s?.description]);
+ let storyContext=uniquePromptValues([s?.storyNotes]);
+ let visualSetup=uniquePromptValues([s?.description]);
  let sceneActions=s?.storyBeats?.length?[]:uniquePromptValues([s?.action]);
  let sceneEmotions=uniquePromptValues([s?.emotion]).filter(x=>!beatEmotions.some(b=>normalizePromptText(b)===normalizePromptText(x)));
  let sceneGestures=uniquePromptValues([s?.gesture]);
@@ -645,7 +646,8 @@ function buildVideoPrompt(){
   'CANONICAL CHARACTER REFERENCES AND SELECTED SCENE VARIATIONS:\n'+(castRefs||v('vidCharacter')||'Use only explicitly approved character references.'),
   'LOCATION DNA REFERENCE:\n'+locRef,
   'PROJECT / CHARACTER ASSET REFERENCES:\n'+(assetRefs||'No additional project-linked assets registered.'),
-  'SCENE CONTEXT / VISUAL SETUP:\n'+(sceneContext.join('\n')||'No additional scene context supplied.'),
+  'STORY CONTEXT / NARRATIVE PURPOSE:\n'+(storyContext.join('\n')||'No additional story context supplied.'),
+  'VISUAL SETUP / INITIAL FRAME:\n'+(visualSetup.join('\n')||'No additional visual setup supplied.'),
   'STORY BEATS / ACTION TIMELINE:\n'+(beats||'No story beats registered.'),
   'DIALOGUE TIMELINE — SPOKEN IN BAHASA INDONESIA:\n'+(dialogue||'No dialogue specified.'),
   'ADDITIONAL SCENE DIRECTION:\n'+(sceneDirection||'No additional scene description supplied.'),

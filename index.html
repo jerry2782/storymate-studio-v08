@@ -577,7 +577,19 @@ function buildVideoPrompt(){
  }).join('\n');
  let beatActions=(s?.storyBeats||[]).flatMap(b=>[b.action,b.description]).filter(Boolean);
  let beatEmotions=(s?.storyBeats||[]).map(b=>b.emotion).filter(Boolean);
- let sceneContext=uniquePromptValues([s?.storyNotes,s?.description]);
+ let sceneContextRaw=uniquePromptValues([s?.storyNotes,s?.description]);
+ let beatActionText=beatActions.map(normalizePromptText);
+ let sceneContext=sceneContextRaw.flatMap(value=>value.split(/(?<=[.!?])\\s+/)).filter(sentence=>{
+  let words=normalizePromptText(sentence).split(/[^a-z0-9]+/).filter(w=>w.length>2&&!['yang','dan','lalu','untuk','dari','dengan','pada','ke','di','the','and'].includes(w));
+  if(words.length<4)return true;
+  let tokens=new Set(words);
+  return !beatActionText.some(action=>{
+   let actionWords=new Set(action.split(/[^a-z0-9]+/).filter(w=>w.length>2&&!['yang','dan','lalu','untuk','dari','dengan','pada','ke','di','the','and'].includes(w)));
+   if(actionWords.size<3)return false;
+   let overlap=[...tokens].filter(w=>actionWords.has(w)).length;
+   return overlap>=3&&overlap/Math.min(tokens.size,actionWords.size)>=0.45;
+  });
+ });
  let sceneActions=uniquePromptValues([s?.action]).filter(x=>!beatActions.some(b=>normalizePromptText(b)===normalizePromptText(x)));
  let sceneEmotions=uniquePromptValues([s?.emotion]).filter(x=>!beatEmotions.some(b=>normalizePromptText(b)===normalizePromptText(x)));
  let sceneGestures=uniquePromptValues([s?.gesture]);

@@ -534,13 +534,15 @@ function videoStudio(){return `${header('MOTION PRODUCTION','AI Video Studio','S
 <div class="panel"><div class="sectionhead"><h2>Video Master Prompt</h2><span class="mini-tag">Ready for handoff</span></div><div id="videoPromptOutput" class="promptout">Pilih metode, lengkapi arahan, lalu Build Video Prompt.</div><div class="actions" style="margin-top:12px"><button class="btn" onclick="copyText(document.getElementById('videoPromptOutput').textContent)">Copy Prompt</button><button class="btn" onclick="saveVideoJob()">Save Job</button></div></div>
 <div class="panel"><h2>Production Queue</h2>${renderGenerationQueue('video')}</div>`}
 function prefillVideo(){
- let s=db.scenes.find(x=>x.id===document.getElementById('vidScene')?.value);if(!s)return;
+ let s=db.scenes.find(x=>x.id===document.getElementById('vidScene')?.value);if(!s){window.videoScenePrefillAction='';return}
  let cast=(s.castIds||[]).map(cid=>db.characters.find(c=>c.id===cid)).filter(Boolean);
  if(!cast.length&&s.characterId){let c=db.characters.find(x=>x.id===s.characterId);if(c)cast=[c]}
  document.getElementById('vidCharacter').value=cast.map(c=>c.name).join(', ')||s.castNames?.join(', ')||s.character||'';
  let loc=db.locations.find(l=>l.id===s.locationId)||db.locations.find(l=>l.name===s.location);
  document.getElementById('vidLocation').value=loc?[loc.name,loc.environment,loc.lighting,loc.atmosphere].filter(Boolean).join(' — '):(s.location||'');
- document.getElementById('vidAction').value=[s.storyNotes,s.description,s.action,s.emotion,s.gesture,s.dialogue,s.delivery,s.shot,s.angle,s.movement,s.lens,s.camera,s.music,s.ambience,s.sfx,s.audio].filter(Boolean).join('\n\n');
+ let baseline=[s.storyNotes,s.description,s.action,s.emotion,s.gesture,s.dialogue,s.delivery,s.shot&&'Shot type: '+s.shot,s.angle&&'Camera angle: '+s.angle,s.movement&&'Camera movement: '+s.movement,s.lens&&'Lens: '+s.lens,s.camera,s.music&&'Music: '+s.music,s.ambience&&'Ambience: '+s.ambience,s.sfx&&'SFX: '+s.sfx,s.audio].filter(Boolean).join('\\n\\n');
+ window.videoScenePrefillAction=baseline;
+ document.getElementById('vidAction').value=baseline;
  let project=db.projects.find(p=>p.id===s.projectId);if(project)document.getElementById('vidProject').value=project.id;
 }
 function buildVideoPrompt(){
@@ -550,35 +552,38 @@ function buildVideoPrompt(){
  let cast=(s?.castIds||[]).map(cid=>db.characters.find(c=>c.id===cid)).filter(Boolean);
  if(!cast.length&&s?.characterId){let c=db.characters.find(x=>x.id===s.characterId);if(c)cast=[c]}
  if(!cast.length&&v('vidCharacter'))cast=v('vidCharacter').split(',').map(n=>db.characters.find(c=>c.name.trim().toLowerCase()===n.trim().toLowerCase())).filter(Boolean);
- let variationMap=s?.variationIds||s?.characterVariations||{};
+ const clean=(value,fallback='Not specified in the saved reference; do not invent details.')=>(value&&String(value).trim())||fallback;
+ const variationMap=s?.variationIds||s?.characterVariations||{};
  let castRefs=cast.map(c=>{
   let d=c.permanentDNA||{},variation=(c.variations||[]).find(x=>x.id===variationMap[c.id]);
   let linked=(db.assets||[]).filter(a=>a.characterId===c.id||(c.assetIds||[]).includes(a.id));
-  let assetDetails=linked.map(a=>`- ${a.name||a.title||'Untitled asset'} [${a.category||a.type||'Reference'}; Asset ID: ${a.id}]: ${a.notes||a.description||'Visual reference linked to this character.'}`).join('\n');
-  return `${c.name} [Character ID: ${c.id}]
-PERMANENT CHARACTER DNA
-Physical appearance: ${d.appearance||c.appearance||'Use approved canonical reference'}.
-Personality: ${d.personality||c.personality||'As established'}.
-Voice identity: ${d.voice||c.voice||'As established'}.
-Identity consistency rules: ${d.consistencyRules||c.consistencyRules||'Preserve exact face, hairstyle, skin tone and body proportions.'}
-SCENE VARIATION: ${variation?`${variation.name||'Unnamed variation'} (${variation.type||'Variation'}) — ${variation.description||'Follow approved variation reference.'} [Variation ID: ${variation.id}]. Apply only to this scene; never overwrite Permanent DNA.`:'No variation selected. Use canonical/default appearance.'}
-LINKED VISUAL ASSETS
-${assetDetails||'No character-linked assets registered.'}`;
- }).join('\n\n');
+  let assetDetails=linked.map(a=>'- '+(a.name||a.title||'Untitled asset')+' ['+(a.category||a.type||'Reference')+'; Asset ID: '+a.id+']: '+clean(a.notes||a.description,'Visual reference linked to this character.')).join('\\n');
+  return c.name+' [Character ID: '+c.id+']\\nPERMANENT CHARACTER DNA\\nPhysical appearance: '+clean(d.appearance||c.appearance)+'\\nPersonality: '+clean(d.personality||c.personality)+'\\nVoice identity: '+clean(d.voice||c.voice)+'\\nIdentity consistency rules: '+clean(d.consistencyRules||c.consistencyRules,'Preserve the approved face, hairstyle, skin tone and body proportions; do not invent identity changes.')+'\\nSCENE VARIATION: '+(variation?(clean(variation.name,'Unnamed variation')+' ('+(variation.type||'Variation')+') — '+clean(variation.description)+' [Variation ID: '+variation.id+']. Apply only to this scene; never overwrite Permanent DNA.'):'No variation selected. Use canonical/default appearance.')+'\\nLINKED VISUAL ASSETS\\n'+(assetDetails||'No character-linked assets registered.');
+ }).join('\\n\\n');
  let loc=db.locations.find(l=>l.id===s?.locationId)||db.locations.find(l=>l.name===s?.location);
  let projectAssets=(db.assets||[]).filter(a=>project&&a.projectId===project.id&&(!a.characterId||cast.some(c=>c.id===a.characterId)));
- let locRef=loc?`${loc.name} [Location ID: ${loc.id}]
-Environment: ${loc.environment||'As established'}.
-Lighting: ${loc.lighting||'As established'}.
-Atmosphere: ${loc.atmosphere||'As established'}.
-Location continuity: preserve approved layout, architecture, props, geography and lighting logic.`:v('vidLocation');
- let assetRefs=projectAssets.map(a=>`- ${a.name||a.title||'Asset'} [${a.category||a.type||'Reference'}; Asset ID: ${a.id}]: ${a.notes||a.description||'Project visual reference.'}`).join('\n');
- let beats=(s?.storyBeats||[]).map((b,i)=>`${i+1}. ${b.title||'Beat '+(i+1)}\nWhat happens: ${b.description||''}\nAction / reaction: ${b.action||''}\nEmotional change: ${b.emotion||''}`).join('\n\n');
+ let locRef=loc?loc.name+' [Location ID: '+loc.id+']\\nEnvironment: '+clean(loc.environment)+'\\nLighting: '+clean(loc.lighting)+'\\nAtmosphere: '+clean(loc.atmosphere)+'\\nLocation continuity: preserve the approved layout, architecture, props, geography and lighting logic.':clean(v('vidLocation'),'No location reference selected.');
+ let assetRefs=projectAssets.map(a=>'- '+(a.name||a.title||'Asset')+' ['+(a.category||a.type||'Reference')+'; Asset ID: '+a.id+']: '+clean(a.notes||a.description,'Project visual reference.')).join('\\n');
+ let beats=(s?.storyBeats||[]).map((b,i)=>(i+1)+'. '+(b.title||'Beat '+(i+1))+'\\nAction: '+clean(b.action||b.description,'No specific action supplied.')+'\\nEmotional change: '+clean(b.emotion,'Not specified.')).join('\\n\\n');
  let dialogue=(s?.dialogueEntries||[]).map(d=>{
   let speaker=d.characterName||db.characters.find(c=>c.id===d.characterId)?.name||'Character';
-  return `${speaker}: "${d.text||''}"${d.delivery?' (Delivery: '+d.delivery+')':''}`;
- }).join('\n');
- let sceneDirection=s?[s.storyNotes,s.description,s.action,s.emotion,s.gesture,s.shot&&'Shot type: '+s.shot,s.angle&&'Camera angle: '+s.angle,s.movement&&'Camera movement: '+s.movement,s.lens&&'Lens: '+s.lens,s.camera,s.music&&'Music: '+s.music,s.ambience&&'Ambience: '+s.ambience,s.sfx&&'SFX: '+s.sfx,s.audio].filter(Boolean).join('\n'):'';
+  return speaker+': "'+(d.text||'')+'"'+(d.delivery?' (Delivery: '+d.delivery+')':'');
+ }).join('\\n');
+ let sceneParts=s?[s.storyNotes,s.description].filter(Boolean):[];
+ let cameraParts=s?[s.shot&&'Shot type: '+s.shot,s.angle&&'Camera angle: '+s.angle,s.movement&&'Camera movement: '+s.movement,s.lens&&'Lens: '+s.lens,s.camera].filter(Boolean):[];
+ let audioParts=s?[s.music&&'Music: '+s.music,s.ambience&&'Ambience: '+s.ambience,s.sfx&&'SFX: '+s.sfx,s.audio].filter(Boolean):[];
+ let baseline=window.videoScenePrefillAction||'';
+ let currentAction=v('vidAction');
+ let additional='';
+ if(currentAction){
+  if(baseline&&currentAction.startsWith(baseline)) additional=currentAction.slice(baseline.length).trim();
+  else if(currentAction!==baseline) additional=currentAction;
+ }
+ let norm=x=>String(x||'').toLowerCase().replace(/\\s+/g,' ').trim();
+ let known=new Set([...sceneParts,...cameraParts,...audioParts,...(s?[s.action,s.emotion,s.gesture,s.dialogue,s.delivery]:[])].filter(Boolean).map(norm));
+ additional=additional.split(/\\n+/).map(x=>x.trim()).filter(x=>x&&!known.has(norm(x))).join('\\n');
+ let sceneDirection=[...sceneParts,...(s?.action?[ 'Character action: '+s.action]:[]),...(s?.emotion?['Emotional direction: '+s.emotion]:[]),...(s?.gesture?['Facial expression and gestures: '+s.gesture]:[])].join('\\n');
+ let negative=v('vidNegative')||'Face distortion, identity drift, inconsistent facial features, changing hairstyle, changing skin tone, incorrect body proportions, wardrobe changes, extra fingers, extra limbs, duplicate characters, unnatural motion, flickering, blurry details, unstable camera, warped background, sudden lighting changes, unrealistic physics.';
  let out=[
   'AI VIDEO MASTER PRODUCTION PROMPT',
   'PROJECT: '+(project?.title||'Unassigned'),
@@ -588,18 +593,20 @@ Location continuity: preserve approved layout, architecture, props, geography an
   'RESOLUTION: '+v('vidResolution'),
   'ASPECT RATIO: '+v('vidRatio'),
   'VISUAL STYLE: '+v('vidStyle'),
-  s?`SOURCE SEQUENCE: ${s.title}\nScene number: ${s.scene||'Not specified'}\nDuration: ${s.duration||'Not specified'}\nSequence ID: ${s.id}`:'',
-  'CANONICAL CHARACTER REFERENCES AND SELECTED SCENE VARIATIONS:\n'+(castRefs||v('vidCharacter')||'Use only explicitly approved character references.'),
-  'LOCATION DNA REFERENCE:\n'+(locRef||'Use approved location reference and preserve its established layout.'),
-  'PROJECT / CHARACTER ASSET REFERENCES:\n'+(assetRefs||'No additional project-linked assets registered. Use the selected character references above.'),
-  'STORY BEATS:\n'+(beats||''),
-  'DIALOGUE TIMELINE — SPOKEN IN BAHASA INDONESIA:\n'+(dialogue||s?.dialogue||''),
-  'SCENE DIRECTION:\n'+(sceneDirection||v('vidAction')),
-  'ADDITIONAL USER DIRECTION:\n'+v('vidAction'),
-  'CONTINUITY REQUIREMENTS:\nPreserve each character’s Permanent Character DNA, facial identity, hairstyle, skin tone, body proportions and voice. Apply only the variation explicitly selected for this scene. Keep location layout, lighting, props, wardrobe and linked asset references consistent. Do not change canonical DNA when applying a scene variation. Maintain natural motion, coherent physics, clear screen direction and cinematic continuity.',
-  'NEGATIVE PROMPT / AVOID:\n'+v('vidNegative')
- ].filter(Boolean).join('\n\n');
- document.getElementById('videoPromptOutput').textContent=out;window.videoPromptDraft=out;toast('Video prompt berhasil dirakit dari Scene, Character DNA, variasi, Location DNA, dan Asset Library');
+  s?'SOURCE SEQUENCE: '+s.title+'\\nScene number: '+(s.scene||'Not specified')+'\\nSCENE DURATION: '+(s.duration||'Not specified')+' seconds\\nSequence ID: '+s.id:'',
+  'CANONICAL CHARACTER REFERENCES AND SELECTED SCENE VARIATIONS:\\n'+(castRefs||v('vidCharacter')||'Use only explicitly approved character references.'),
+  'LOCATION DNA REFERENCE:\\n'+locRef,
+  'PROJECT / CHARACTER ASSET REFERENCES:\\n'+(assetRefs||'No additional project-linked assets registered.'),
+  'STORY BEATS:\\n'+(beats||'No story beats registered.'),
+  'DIALOGUE TIMELINE — SPOKEN IN BAHASA INDONESIA:\\n'+(dialogue||'No dialogue specified.'),
+  'SCENE ACTION AND EMOTIONAL DIRECTION:\\n'+(sceneDirection||'No additional scene description supplied.'),
+  'CAMERA DIRECTION:\\n'+(cameraParts.join('\\n')||'No specific camera direction supplied.'),
+  'AUDIO DIRECTION:\\n'+(audioParts.join('\\n')||'No specific audio direction supplied.'),
+  additional?'ADDITIONAL USER DIRECTION:\\n'+additional:'',
+  'CONTINUITY REQUIREMENTS:\\nPreserve each character’s Permanent Character DNA, facial identity, hairstyle, skin tone, body proportions and voice. Apply only the variation explicitly selected for this scene. Keep location layout, lighting, props, wardrobe and linked asset references consistent. Do not change canonical DNA when applying a scene variation. Maintain natural motion, coherent physics, clear screen direction and cinematic continuity.',
+  'NEGATIVE PROMPT / AVOID:\\n'+negative
+ ].filter(Boolean).join('\\n\\n');
+ document.getElementById('videoPromptOutput').textContent=out;window.videoPromptDraft=out;toast('Video prompt berhasil dirakit tanpa pengulangan arahan.');
 }
 async function saveVideoJob(){let before=(db.generations||[]).slice();try{let prompt=(window.videoPromptDraft||document.getElementById('videoPromptOutput')?.textContent||'').trim();if(!prompt||prompt.startsWith('Pilih metode')){toast('Buat video prompt terlebih dahulu');return}db.generations=db.generations||[];let projectId=document.getElementById('vidProject')?.value||db.activeProject||'',project=db.projects.find(p=>p.id===projectId);db.generations.unshift({id:id(),kind:'video',status:'Prompt Draft',title:document.getElementById('vidMethod')?.value||'Video Prompt',provider:document.getElementById('vidProvider')?.value||'',project:project?.title||'Unassigned',projectId,duration:document.getElementById('vidDuration')?.value||'',resolution:document.getElementById('vidResolution')?.value||'',ratio:document.getElementById('vidRatio')?.value||'',prompt,created:new Date().toISOString()});if(!await saveAndWait()){db.generations=before;toast('Gagal menyimpan ke database. Data sebelumnya dipulihkan; ekspor backup JSON.');return}render();toast('Production prompt tersimpan di My Prompt Drafts')}catch(e){db.generations=before;console.error(e);toast('Terjadi kesalahan saat menyimpan pekerjaan; data sebelumnya dipulihkan')}}
 function renderGenerationQueue(kind){let a=(db.generations||[]).filter(x=>x.kind===kind);return a.length?a.slice(0,8).map(x=>`<div class="generation-card"><b>${esc(x.title)}</b> <span class="mini-tag">${esc(x.status)}</span><p>${esc(x.provider||x.project||'')} · ${new Date(x.created).toLocaleString('id-ID')}\n${esc(x.prompt.slice(0,220))}...</p><button class="btn small" onclick="copyText(${JSON.stringify(x.prompt).replace(/</g,'\\u003c')})">Copy prompt</button></div>`).join(''):'<div class="empty">Belum ada pekerjaan tersimpan.</div>'}

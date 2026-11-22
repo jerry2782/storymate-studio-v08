@@ -1,6 +1,12 @@
-# STORYMATE STUDIO V0.8.0.0 — Release Candidate
+# STORYMATE STUDIO V0.8.5.0 — Release Candidate
 
 Mobile-first PWA for story development and AI film-production prompt preparation.
+
+## V0.8.5.0 maintenance notes
+
+- Align visible app version labels, runtime `APP_VERSION`, and the service-worker cache namespace on V0.8.5.0.
+- Scope Story Blueprint output element IDs to each story record to prevent ambiguous DOM lookups as the renderer evolves.
+- Preserve existing local storage keys and backup schema; this release does not reset or migrate user data.
 
 ## Current release status
 

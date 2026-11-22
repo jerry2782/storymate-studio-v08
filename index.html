@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>STORYMATE STUDIO — V0.8.2.0 PWA</title>
+<title>STORYMATE STUDIO — V0.8.3.0 PWA</title>
 <style>
 :root{--bg:#080a13;--panel:#111526;--panel2:#171d32;--line:#272e49;--text:#f4f5ff;--muted:#9aa3c1;--violet:#9b7cff;--blue:#42b9ff;--cyan:#65e0ed;--good:#53d6a0;--danger:#ff7189;--radius:18px}
 *{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#242052 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
@@ -122,7 +122,7 @@ body.simple-mode .simple-director-note{display:block}
   <div class="sidebar-foot">✦ <b>STUDIO V0.8.0.0</b><br>Local production workspace · Data tersimpan di perangkat ini</div>
 </aside>
 <main class="main">
-  <div class="topbar"><div><div class="crumb">STORYMATE STUDIO / <span id="crumb">DASHBOARD</span></div></div><div class="topright"><button id="studioModeToggle" class="mode-toggle" type="button" onclick="toggleStudioMode()">MODE: SIMPLE</button><span class="pill">● LOCAL WORKSPACE</span><span class="pill">V0.8.2.0</span></div></div>
+  <div class="topbar"><div><div class="crumb">STORYMATE STUDIO / <span id="crumb">DASHBOARD</span></div></div><div class="topright"><button id="studioModeToggle" class="mode-toggle" type="button" onclick="toggleStudioMode()">MODE: SIMPLE</button><span class="pill">● LOCAL WORKSPACE</span><span class="pill">V0.8.3.0</span></div></div>
   <div id="view"></div>
 </main>
 </div>
@@ -148,7 +148,7 @@ body.simple-mode .simple-director-note{display:block}
 </div>
 <div id="toast" class="toast hidden"></div>
 <script>
-const APP_VERSION='0.8.2.0', BACKUP_SCHEMA=3, KEY='storymate_studio_v01', IDB_NAME='storymate_studio_persistent_v1', IDB_STORE='workspace';
+const APP_VERSION='0.8.3.0', BACKUP_SCHEMA=3, KEY='storymate_studio_v01', IDB_NAME='storymate_studio_persistent_v1', IDB_STORE='workspace';
 const blank=()=>({projects:[],characters:[],locations:[],scenes:[],assets:[],stories:[],generations:[],production:{},activeProject:''});
 let db=blank(),idb=null,storageState={mode:'checking',message:'Memeriksa penyimpanan perangkat…',lastSave:''};
 let page='dashboard',promptResult='',assetEditingId='';
@@ -382,6 +382,39 @@ function generateStory(e){
 }
 function renderStoryBlueprint(st){
  return '<div class="panel"><div class="sectionhead"><div><div class="eyebrow">STORY DEVELOPMENT RESULT</div><h2>'+esc(st.title)+'</h2></div><span class="tag">DRAFT</span></div><p class="muted">'+esc(st.format)+' · '+esc(st.genre)+' · '+esc(st.tone)+'</p><div class="actions"><button class="btn small" onclick="copyText(document.getElementById(\'storyBlueprintText\').textContent)">Copy Blueprint</button><button class="btn small" onclick="viewStoryBlueprint(\''+st.id+'\')">Full View</button></div><div class="promptout" id="storyBlueprintText">'+esc(st.outline)+'</div></div>';
+}
+function buildStoryBreakdown(storyId){
+ const st=db.stories.find(x=>x.id===storyId);if(!st)return;
+ const plan=[
+  ['Opening Image','Perkenalkan dunia cerita dan kondisi awal tokoh utama.','Tampilkan rutinitas, lingkungan, serta satu detail visual yang mewakili keadaan batin tokoh.','Membangun rasa ingin tahu dan memperkenalkan dunia.'],
+  ['Character Setup','Perlihatkan kebutuhan, keinginan, dan hubungan penting tokoh.','Tokoh menjalani aktivitas yang memperjelas apa yang ia inginkan dan apa yang belum ia sadari.','Membuat penonton memahami tokoh sebelum konflik dimulai.'],
+  ['Inciting Incident','Hadirkan peristiwa pemicu yang mengganggu keadaan normal.','Sebuah kejadian memaksa tokoh bereaksi terhadap masalah utama: '+st.idea,'Mengubah arah cerita dan memunculkan pertanyaan utama.'],
+  ['First Decision','Tokoh mengambil keputusan awal untuk menghadapi masalah.','Tunjukkan pilihan konkret dan konsekuensi pertamanya.','Mendorong tokoh masuk ke konflik utama.'],
+  ['Rising Conflict','Hambatan bertambah dan hubungan antar tokoh mengalami tekanan.','Rangkaikan usaha, kegagalan kecil, kesalahpahaman, atau pertentangan yang relevan dengan premis.','Menaikkan taruhan dan menjaga momentum.'],
+  ['Midpoint Twist','Berikan informasi atau kejadian yang mengubah pemahaman tokoh.','Tokoh mengetahui sesuatu atau mengalami perubahan yang memaksanya meninjau kembali rencana.','Mengubah strategi dan meningkatkan intensitas.'],
+  ['Crisis','Rencana tokoh terancam gagal dan konsekuensi terasa nyata.','Hadapkan tokoh pada pilihan sulit yang menyentuh tujuan dan kebutuhan batinnya.','Mencapai titik emosional terendah sebelum klimaks.'],
+  ['Climax','Tokoh menghadapi konflik utama dan mengambil keputusan penentu.','Bangun konfrontasi melalui tindakan dan pilihan, bukan penjelasan panjang.','Membayar konflik utama dan membuktikan perubahan tokoh.'],
+  ['Resolution','Tunjukkan akibat dari keputusan dan arah hidup setelah konflik.','Tutup dengan nuansa '+(st.ending||'Hopeful')+' dan gambaran perubahan yang dialami tokoh.','Memberi kepuasan emosional dan menegaskan tema.']
+ ];
+ st.breakdown=plan.map((p,index)=>({id:id(),number:index+1,title:p[0],purpose:p[1],action:p[2],dramaticFunction:p[3],duration:'15 seconds'}));
+ st.breakdownVersion='0.1-local';
+ saveAndWait().then(ok=>{if(!ok){st.breakdown=undefined;toast('Breakdown gagal disimpan. Coba lagi.');return}const el=document.getElementById('storyResult');if(el)el.innerHTML=renderStoryBlueprint(st);toast('Scene Breakdown berhasil dibuat dan disimpan')});
+}
+function renderStoryBlueprint(st){
+ const breakdown=Array.isArray(st.breakdown)?st.breakdown:[];
+ return '<div class="panel"><div class="sectionhead"><div><div class="eyebrow">STORY DEVELOPMENT RESULT</div><h2>'+esc(st.title)+'</h2></div><span class="tag">DRAFT</span></div><p class="muted">'+esc(st.format)+' · '+esc(st.genre)+' · '+esc(st.tone)+'</p><div class="actions"><button class="btn small" onclick="copyText(document.getElementById(\\'storyBlueprintText\\').textContent)">Copy Blueprint</button><button class="btn small" onclick="viewStoryBlueprint(\\''+st.id+'\\')">Full View</button><button class="btn primary" onclick="buildStoryBreakdown(\\''+st.id+'\\')">✧ '+(breakdown.length?'Regenerate':'Generate')+' Scene Breakdown</button></div><div class="promptout" id="storyBlueprintText">'+esc(st.outline)+'</div>'+(breakdown.length?'<div class="subhead" style="margin-top:18px">SCENE BREAKDOWN · '+breakdown.length+' SCENES</div>'+breakdown.map(sc=>'<div class="dna-block"><b>SCENE '+sc.number+' · '+esc(sc.title)+'</b><p><b>Purpose:</b> '+esc(sc.purpose)+'</p><p><b>Action direction:</b> '+esc(sc.action)+'</p><p><b>Dramatic function:</b> '+esc(sc.dramaticFunction)+'</p><small class="muted">Estimated duration: '+esc(sc.duration)+'</small></div>').join('')+'<div class="actions"><button class="btn primary" onclick="importStoryBreakdown(\\''+st.id+'\\')">＋ Add scenes to Scene Builder</button></div>':'')+'</div>';
+}
+async function importStoryBreakdown(storyId){
+ const st=db.stories.find(x=>x.id===storyId);if(!st||!Array.isArray(st.breakdown)||!st.breakdown.length){toast('Generate Scene Breakdown terlebih dahulu');return}
+ const already=st.importedSceneIds||[];
+ if(already.length&&already.every(idValue=>db.scenes.some(sc=>sc.id===idValue))){toast('Breakdown ini sudah ditambahkan ke Scene Builder');return}
+ const project=db.projects.find(p=>p.id===st.projectId);
+ const created=st.breakdown.map((item,index)=>({id:id(),title:item.title,scene:String(item.number),duration:item.duration,project:project?.title||'',projectId:project?.id||'',character:'',characterId:'',castIds:[],castNames:[],location:'',locationId:'',storyNotes:'Story purpose: '+item.purpose+'\\nDramatic function: '+item.dramaticFunction,description:'Visual setup to be developed: '+item.action,storyBeats:[{id:id(),title:item.title,description:item.purpose,action:item.action,emotion:''}],dialogueEntries:[],dialogue:'',sourceStoryId:st.id,created:new Date().toISOString()}));
+ const before=db.scenes.slice(),oldIds=st.importedSceneIds;
+ db.scenes=[...created,...db.scenes];st.importedSceneIds=created.map(x=>x.id);
+ const ok=await saveAndWait();if(!ok){db.scenes=before;st.importedSceneIds=oldIds;toast('Gagal menambahkan scenes. Data sebelumnya dipulihkan.');return}
+ toast(created.length+' scenes ditambahkan ke Scene Builder');
+ nav('storyboard');
 }
 function viewStoryBlueprint(storyId){
  const st=db.stories.find(x=>x.id===storyId);if(!st)return;

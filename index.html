@@ -332,15 +332,15 @@ function locationForm(){document.getElementById('locForm').innerHTML=`<div class
 async function saveLocation(e){e.preventDefault();let before=db.locations.slice(),f=new FormData(e.target),name=String(f.get('name')||'').trim();if(!name){toast('Nama lokasi wajib diisi');return}db.locations.unshift({id:id(),name,type:f.get('type'),environment:f.get('environment'),lighting:f.get('lighting'),atmosphere:f.get('atmosphere')});if(await saveAndWait()){render();toast('Location DNA tersimpan')}else{db.locations=before;render();toast('Gagal menyimpan Location DNA. Data sebelumnya dipulihkan')}}
 function story(){
  const active=activeProjectObj(),saved=db.stories.slice().sort((a,b)=>(b.created||'').localeCompare(a.created||''));
- return \`\${header('WRITING ROOM','Story Development Engine','Kembangkan ide menjadi fondasi cerita yang siap dikembangkan menjadi film, serial, atau animasi.')}
+ return `${header('WRITING ROOM','Story Development Engine','Kembangkan ide menjadi fondasi cerita yang siap dikembangkan menjadi film, serial, atau animasi.')}
  <div class="panel"><div class="sectionhead"><h2>01 · Story Brief</h2><span class="tag">LOCAL STORY ENGINE</span></div>
  <div class="status-note"><b>Story Engine V0.2</b><br>Menyusun kerangka cerita terstruktur secara lokal. Belum menggunakan AI eksternal; hasilnya adalah draft awal yang dapat kamu kembangkan dan revisi.</div>
  <form onsubmit="generateStory(event)" id="storyBriefForm">
  <div class="formgrid">
  <div class="field"><label>Working title</label><input name="title" placeholder="Contoh: Uang Seratus Ribu yang Salah Kasih"></div>
- <div class="field"><label>Project destination</label><select name="projectId"><option value="">Save as independent story</option>\${db.projects.map(p=>'<option value="'+esc(p.id)+'" '+(active?.id===p.id?'selected':'')+'>'+esc(p.title)+'</option>').join('')}</select></div>
+ <div class="field"><label>Project destination</label><select name="projectId"><option value="">Save as independent story</option>${db.projects.map(p=>'<option value="'+esc(p.id)+'" '+(active?.id===p.id?'selected':'')+'>'+esc(p.title)+'</option>').join('')}</select></div>
  <div class="field"><label>Story format</label><select name="format"><option>Film pendek</option><option>Film panjang</option><option>Serial</option><option>Web series</option><option>Animasi</option><option>Drama pendek / FTV</option></select></div>
- <div class="field"><label>Genre</label><select name="genre">\${['Drama','Comedy','Horror','Action','Romance','Fantasy','Animation','Thriller','Mystery','Adventure','Family'].map(x=>'<option>'+x+'</option>').join('')}</select></div>
+ <div class="field"><label>Genre</label><select name="genre">${['Drama','Comedy','Horror','Action','Romance','Fantasy','Animation','Thriller','Mystery','Adventure','Family'].map(x=>'<option>'+x+'</option>').join('')}</select></div>
  <div class="field"><label>Tone / atmosphere</label><select name="tone"><option>Natural and emotional</option><option>Light and funny</option><option>Dark and tense</option><option>Epic and inspirational</option><option>Warm and heartwarming</option><option>Mysterious and suspenseful</option><option>Realistic and grounded</option></select></div>
  <div class="field"><label>Target audience</label><select name="audience"><option>General audience</option><option>Family</option><option>Children</option><option>Teenagers</option><option>Young adults</option><option>Adult audience</option></select></div>
  </div>
@@ -358,9 +358,9 @@ function story(){
  <div class="actions"><button class="btn primary" type="submit">✧ Develop Story Blueprint</button><button class="btn ghost" type="reset">Reset form</button></div>
  </form></div>
  <div id="storyResult"></div>
- <div class="panel"><div class="sectionhead"><h2>02 · Story Library</h2><span class="tag">\${saved.length} SAVED</span></div>
- \${saved.length?saved.map(st=>'<div class="item"><div><strong>'+esc(st.title||'Untitled Story')+'</strong><small>'+esc(st.format||'Story')+' · '+esc(st.genre||'Genre not set')+' · '+esc(db.projects.find(p=>p.id===st.projectId)?.title||'Independent story')+'</small></div><div class="item-actions"><button class="btn small" onclick="viewStoryBlueprint(\\''+st.id+'\\')">View</button></div></div>').join(''):'<div class="empty">Belum ada story blueprint. Cerita yang kamu kembangkan akan tersimpan di sini.</div>'}
- </div>\`;
+ <div class="panel"><div class="sectionhead"><h2>02 · Story Library</h2><span class="tag">${saved.length} SAVED</span></div>
+ ${saved.length?saved.map(st=>'<div class="item"><div><strong>'+esc(st.title||'Untitled Story')+'</strong><small>'+esc(st.format||'Story')+' · '+esc(st.genre||'Genre not set')+' · '+esc(db.projects.find(p=>p.id===st.projectId)?.title||'Independent story')+'</small></div><div class="item-actions"><button class="btn small" onclick="viewStoryBlueprint(\\''+st.id+'\\')">View</button></div></div>').join(''):'<div class="empty">Belum ada story blueprint. Cerita yang kamu kembangkan akan tersimpan di sini.</div>'}
+ </div>`;
 }
 function generateStory(e){
  e.preventDefault();

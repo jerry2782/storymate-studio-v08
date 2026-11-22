@@ -183,3 +183,11 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Pilihan sudut pandang dan catatan lembar karakter disimpan pada metadata draft gambar (`selectedViews` dan `sheetNotes`) untuk membantu pelacakan konfigurasi prompt.
 - Hasil tetap berupa prompt berbahasa Inggris untuk layanan gambar eksternal. Satu lembar multi-view bergantung pada kemampuan layanan gambar; aplikasi ini belum menghasilkan file gambar secara langsung atau memecah hasil menjadi file terpisah.
 - Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi. Pengujian interaksi preset, pembuatan prompt dan penyimpanan draft pada browser nyata belum dilakukan.
+
+## Perbaikan upload foto pada Edit Character DNA
+
+- Form Edit DNA Karakter sekarang menyediakan input foto opsional (`accept=image/*`, `capture=environment`) agar pengguna dapat memilih gambar dari galeri atau membuka kamera perangkat yang mendukung.
+- Saat foto baru dipilih, sistem memvalidasi batas 1,2 MB, membaca gambar sebagai data URL, menyimpan aset tertaut ke Character ID, dan menjadikannya referensi utama karakter.
+- Aset referensi utama sebelumnya untuk karakter yang sama ditandai bukan utama; aset dan variasi lain tetap dipertahankan.
+- Upload foto tidak mengubah Permanent DNA. Bila penyimpanan gagal, data karakter dan daftar aset dipulihkan dari snapshot sebelum perubahan.
+- Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi. Uji pemilihan galeri/kamera dan IndexedDB di browser Android nyata tetap perlu dilakukan.

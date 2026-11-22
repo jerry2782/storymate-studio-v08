@@ -626,9 +626,9 @@ function projectBundle(pid){
  const assetIds=new Set();characters.forEach(c=>(c.assetIds||[]).forEach(id=>assetIds.add(id)));scenes.forEach(scene=>(scene.assetIds||[]).forEach(id=>assetIds.add(id)));
  const assets=db.assets.filter(a=>a.projectId===pid||a.project===project.title||characterIds.has(a.characterId)||assetIds.has(a.id));
  const sceneIds=new Set(scenes.map(x=>x.id));
- const stories=db.stories.filter(x=>x.projectId===pid||x.project===project.title);
+ const episodes=db.episodes.filter(x=>x.projectId===pid);\n const stories=db.stories.filter(x=>x.projectId===pid||x.project===project.title);
  const generations=db.generations.filter(x=>x.projectId===pid||x.project===project.title||sceneIds.has(x.sceneId));
- return {app:'STORYMATE STUDIO',scope:'project',version:APP_VERSION,schemaVersion:BACKUP_SCHEMA,exportedAt:new Date().toISOString(),projectId:pid,data:{projects:[project],characters,locations,scenes,assets,stories,generations,production:db.production||{},activeProject:pid}};
+ return {app:'STORYMATE STUDIO',scope:'project',version:APP_VERSION,schemaVersion:BACKUP_SCHEMA,exportedAt:new Date().toISOString(),projectId:pid,data:{projects:[project],episodes,characters,locations,scenes,assets,stories,generations,production:db.production||{},activeProject:pid}};
 }
 async function projectBackup(pid){
  try{if(!await saveAndWait())throw new Error('Penyimpanan belum terkonfirmasi.');const payload=projectBundle(pid);const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`storymate-project-${(payload.data.projects[0].title||'backup').toLowerCase().replace(/[^a-z0-9]+/g,'-')}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast('Project Backup berhasil dibuat');}
@@ -641,14 +641,14 @@ async function projectRestore(e,targetPid){
   const payload=JSON.parse(await file.text());if(payload?.app!=='STORYMATE STUDIO'||payload?.scope!=='project'||!payload.data||!Array.isArray(payload.data.projects)||payload.data.projects.length!==1)throw new Error('Pilih file Project Backup STORYMATE STUDIO yang valid.');
   if(payload.schemaVersion>BACKUP_SCHEMA)throw new Error('Project Backup dibuat dengan schema yang lebih baru. Perbarui STORYMATE STUDIO terlebih dahulu.');
   for(const group of ['projects','characters','locations','scenes','assets']){if(!Array.isArray(payload.data[group]))throw new Error('Koleksi '+group+' tidak tersedia dalam Project Backup.');if(payload.data[group].some(item=>!item||typeof item!=='object'||Array.isArray(item)))throw new Error('Ada item data yang rusak pada '+group+'.')}
-  for(const group of ['stories','generations']){if(payload.data[group]!==undefined&&!Array.isArray(payload.data[group]))throw new Error('Format koleksi '+group+' tidak valid.');if(Array.isArray(payload.data[group])&&payload.data[group].some(item=>!item||typeof item!=='object'||Array.isArray(item)))throw new Error('Ada item data yang rusak pada '+group+'.');if(!Array.isArray(payload.data[group]))payload.data[group]=[]}
+  for(const group of ['episodes','stories','generations']){if(payload.data[group]!==undefined&&!Array.isArray(payload.data[group]))throw new Error('Format koleksi '+group+' tidak valid.');if(Array.isArray(payload.data[group])&&payload.data[group].some(item=>!item||typeof item!=='object'||Array.isArray(item)))throw new Error('Ada item data yang rusak pada '+group+'.');if(!Array.isArray(payload.data[group]))payload.data[group]=[]}
   const incoming=normalizeWorkspaceData(payload.data),source=incoming.projects[0],target=db.projects.find(p=>p.id===targetPid);if(!target)throw new Error('Project tujuan tidak ditemukan.');
-  for(const group of ['projects','characters','locations','scenes','assets','stories','generations']){const seen=new Set();for(const item of incoming[group]){if(!item||typeof item.id!=='string'||!item.id.trim())throw new Error('Item tidak valid pada '+group+'.');if(seen.has(item.id))throw new Error('ID duplikat pada '+group+': '+item.id);seen.add(item.id)}}
+  for(const group of ['projects','episodes','characters','locations','scenes','assets','stories','generations']){const seen=new Set();for(const item of incoming[group]){if(!item||typeof item.id!=='string'||!item.id.trim())throw new Error('Item tidak valid pada '+group+'.');if(seen.has(item.id))throw new Error('ID duplikat pada '+group+': '+item.id);seen.add(item.id)}}
   if(incoming.projects.length!==1)throw new Error('Project Backup harus berisi tepat satu project.');
   const validCharacterIds=new Set(incoming.characters.map(x=>x.id)),validLocationIds=new Set(incoming.locations.map(x=>x.id));
   incoming.scenes=incoming.scenes.map(sc=>({...sc,locationId:validLocationIds.has(sc.locationId)?sc.locationId:'',characterId:validCharacterIds.has(sc.characterId)?sc.characterId:'',castIds:(sc.castIds||[]).filter(cid=>validCharacterIds.has(cid)),dialogueEntries:(sc.dialogueEntries||[]).map(d=>({...d,characterId:validCharacterIds.has(d.characterId)?d.characterId:''}))}));
   incoming.assets=incoming.assets.map(a=>({...a,characterId:validCharacterIds.has(a.characterId)?a.characterId:''}));
-  const oldAdegan=db.scenes.filter(x=>x.projectId===targetPid||x.project===target.title),oldSceneIds=new Set(oldAdegan.map(x=>x.id));
+  const oldEpisodes=db.episodes.filter(x=>x.projectId===targetPid),oldEpisodeIds=new Set(oldEpisodes.map(x=>x.id));\n  const oldAdegan=db.scenes.filter(x=>x.projectId===targetPid||x.project===target.title),oldSceneIds=new Set(oldAdegan.map(x=>x.id));
   const targetCharacterCandidates=db.characters.filter(c=>c.projectId===targetPid||c.project===target.title||oldAdegan.some(sc=>sc.characterId===c.id||(sc.castIds||[]).includes(c.id)||(sc.dialogueEntries||[]).some(d=>d.characterId===c.id)));
   const oldKarakter=targetCharacterCandidates.filter(c=>!db.scenes.some(sc=>!oldSceneIds.has(sc.id)&&(sc.characterId===c.id||(sc.castIds||[]).includes(c.id)||(sc.dialogueEntries||[]).some(d=>d.characterId===c.id))));
   const oldCharacterIds=new Set(oldKarakter.map(c=>c.id));
@@ -669,20 +669,20 @@ async function projectRestore(e,targetPid){
    const importedProject={...source,id:targetPid,title:target.title};
    db.projects=db.projects.map(p=>p.id===targetPid?importedProject:p);
    const remap=(arr,oldIds,newItems)=>[...arr.filter(x=>!oldIds.has(x.id)),...newItems];
-   const retainedIds=group=>new Set(db[group].filter(x=>!({projects:new Set([targetPid]),characters:oldCharacterIds,locations:oldLocationIds,scenes:oldSceneIds,assets:oldAssetIds,stories:new Set(db.stories.filter(x=>x.projectId===targetPid).map(x=>x.id)),generations:new Set(db.generations.filter(x=>x.projectId===targetPid||oldSceneIds.has(x.sceneId)).map(x=>x.id))}[group]).has(x.id)).map(x=>x.id));
+   const retainedIds=group=>new Set(db[group].filter(x=>!({projects:new Set([targetPid]),episodes:oldEpisodeIds,characters:oldCharacterIds,locations:oldLocationIds,scenes:oldSceneIds,assets:oldAssetIds,stories:new Set(db.stories.filter(x=>x.projectId===targetPid).map(x=>x.id)),generations:new Set(db.generations.filter(x=>x.projectId===targetPid||oldSceneIds.has(x.sceneId)).map(x=>x.id))}[group]).has(x.id)).map(x=>x.id));
    const makeIdMap=(items,retained)=>{const map={};items.forEach(item=>{if(retained.has(item.id))map[item.id]=id()});return map};
-   const charMap=makeIdMap(incoming.characters,retainedIds('characters'));
+   const episodeMap=makeIdMap(incoming.episodes,retainedIds('episodes'));\n   const episodeId=old=>episodeMap[old]||old;\n   const charMap=makeIdMap(incoming.characters,retainedIds('characters'));
    const locMap=makeIdMap(incoming.locations,retainedIds('locations'));
    const sceneMap=makeIdMap(incoming.scenes,retainedIds('scenes'));
    const assetMap=makeIdMap(incoming.assets,retainedIds('assets'));
    const charId=old=>charMap[old]||old,locId=old=>locMap[old]||old,sceneId=old=>sceneMap[old]||old,assetId=old=>assetMap[old]||old;
-   const importedKarakter=incoming.characters.map(c=>({...c,id:charId(c.id),projectId:targetPid,assetIds:(c.assetIds||[]).map(assetId)}));
+   const importedEpisodes=incoming.episodes.map(ep=>({...ep,id:episodeId(ep.id),projectId:targetPid}));\n   const importedKarakter=incoming.characters.map(c=>({...c,id:charId(c.id),projectId:targetPid,assetIds:(c.assetIds||[]).map(assetId)}));
    const importedLokasi=incoming.locations.map(l=>({...l,id:locId(l.id),projectId:targetPid}));
    const importedAssets=incoming.assets.map(a=>({...a,id:assetId(a.id),projectId:targetPid,characterId:a.characterId?charId(a.characterId):''}));
-   const importedAdegan=incoming.scenes.map(sc=>{const variations={...(sc.variationIds||sc.characterVariations||{})};const remappedVariations={};Object.entries(variations).forEach(([cid,vid])=>remappedVariations[charId(cid)]=vid);return {...sc,id:sceneId(sc.id),projectId:targetPid,locationId:sc.locationId?locId(sc.locationId):'',characterId:sc.characterId?charId(sc.characterId):'',castIds:(sc.castIds||[]).map(charId),assetIds:(sc.assetIds||[]).map(assetId),variationIds:remappedVariations,dialogueEntries:(sc.dialogueEntries||[]).map(d=>({...d,characterId:d.characterId?charId(d.characterId):''}))}});
+   const importedAdegan=incoming.scenes.map(sc=>{const variations={...(sc.variationIds||sc.characterVariations||{})};const remappedVariations={};Object.entries(variations).forEach(([cid,vid])=>remappedVariations[charId(cid)]=vid);return {...sc,id:sceneId(sc.id),projectId:targetPid,episodeId:sc.episodeId?episodeId(sc.episodeId):'',locationId:sc.locationId?locId(sc.locationId):'',characterId:sc.characterId?charId(sc.characterId):'',castIds:(sc.castIds||[]).map(charId),assetIds:(sc.assetIds||[]).map(assetId),variationIds:remappedVariations,dialogueEntries:(sc.dialogueEntries||[]).map(d=>({...d,characterId:d.characterId?charId(d.characterId):''}))}});
    const newCharIds=new Set(importedKarakter.map(c=>c.id));
    const newLocationIds=new Set(importedLokasi.map(l=>l.id));
-   db.characters=remap(db.characters,oldCharacterIds,importedKarakter);
+   db.episodes=remap(db.episodes,oldEpisodeIds,importedEpisodes);\n   db.characters=remap(db.characters,oldCharacterIds,importedKarakter);
    db.locations=remap(db.locations,oldLocationIds,importedLokasi);
    db.scenes=remap(db.scenes,oldSceneIds,importedAdegan);
    db.assets=remap(db.assets,oldAssetIds,importedAssets);
@@ -709,7 +709,7 @@ async function restore(e){
     if(file.size>100*1024*1024) throw new Error('File backup melebihi batas 100 MB.');
     const text=await file.text();let payload=JSON.parse(text);let incoming=payload?.data||payload;
     if(payload?.app&&payload.app!=='STORYMATE STUDIO')throw new Error('File backup berasal dari aplikasi yang berbeda.');
-    const requiredCollections=['projects','characters','locations','scenes','assets'],optionalCollections=['stories','generations'];
+    const requiredCollections=['projects','characters','locations','scenes','assets'],optionalCollections=['episodes','stories','generations'];
     if(payload?.schemaVersion>BACKUP_SCHEMA)throw new Error('Backup dibuat dengan versi schema yang lebih baru. Perbarui STORYMATE STUDIO sebelum memulihkannya.');
     if(!incoming||typeof incoming!=='object'||Array.isArray(incoming)||requiredCollections.some(key=>!Array.isArray(incoming[key]))) throw new Error('Struktur backup tidak lengkap atau tidak dikenali. Pastikan file berasal dari Full Backup STORYMATE STUDIO.');
     for(const group of [...requiredCollections,...optionalCollections]){if(incoming[group]!==undefined&&!Array.isArray(incoming[group]))throw new Error('Format koleksi '+group+' tidak valid.');if(Array.isArray(incoming[group])&&incoming[group].some(item=>!item||typeof item!=='object'||Array.isArray(item)))throw new Error('Ada item data yang rusak pada '+group+'.');}
@@ -736,7 +736,7 @@ async function restore(e){
       const location=candidate.locations.find(l=>l.id===scene.locationId)||candidate.locations.find(l=>l.name===scene.location);
       const lead=candidate.characters.find(c=>c.id===scene.characterId)||candidate.characters.find(c=>c.name===scene.character);
       const castIds=Array.isArray(scene.castIds)?scene.castIds:[];
-      return {...scene,projectId:project?.id||'',locationId:location?.id||'',characterId:lead?.id||'',castIds:[...new Set([...castIds,...(lead?[lead.id]:[])])],dialogueEntries:Array.isArray(scene.dialogueEntries)?scene.dialogueEntries:[],storyBeats:Array.isArray(scene.storyBeats)?scene.storyBeats:[]};
+      const episode=candidate.episodes.find(ep=>ep.id===scene.episodeId&&ep.projectId===(project?.id||''));return {...scene,projectId:project?.id||'',episodeId:episode?.id||'',locationId:location?.id||'',characterId:lead?.id||'',castIds:[...new Set([...castIds,...(lead?[lead.id]:[])])],dialogueEntries:Array.isArray(scene.dialogueEntries)?scene.dialogueEntries:[],storyBeats:Array.isArray(scene.storyBeats)?scene.storyBeats:[]};
     });
     const projectIds=new Set(candidate.projects.map(x=>x.id)),characterIds=new Set(candidate.characters.map(x=>x.id)),locationIds=new Set(candidate.locations.map(x=>x.id));
     candidate.scenes=candidate.scenes.map(scene=>({...scene,castIds:(scene.castIds||[]).filter(cid=>characterIds.has(cid)),characterId:characterIds.has(scene.characterId)?scene.characterId:'',locationId:locationIds.has(scene.locationId)?scene.locationId:'',projectId:projectIds.has(scene.projectId)?scene.projectId:'',variationIds:Object.fromEntries(Object.entries(scene.variationIds||scene.characterVariations||{}).filter(([cid,vid])=>characterIds.has(cid)&&candidate.characters.find(c=>c.id===cid)?.variations?.some(v=>v.id===vid)))}));

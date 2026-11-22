@@ -308,20 +308,24 @@ function editCharacterDNA(cid){
  <div class="field"><label>Personality DNA</label><textarea name="personality">${esc(d.personality??c.personality??'')}</textarea></div>
  <div class="field"><label>Voice DNA</label><textarea name="voice">${esc(d.voice??c.voice??'')}</textarea></div>
  <div class="field"><label>Identity consistency rules</label><textarea name="rules">${esc(d.consistencyRules??c.consistencyRules??'')}</textarea></div>
+ <div class="field"><label>Tambah / Ganti Foto Referensi Karakter</label><input name="referencePhoto" type="file" accept="image/*" capture="environment"><small class="hint">Pilih foto dari galeri atau ambil dengan kamera. Foto baru akan ditautkan ke karakter ini dan dijadikan referensi utama. Opsional, maksimal 1,2 MB.</small></div>
  <div class="status-note">Character ID, variasi tersimpan, dan Linked Pustaka Aset tidak akan dihapus atau dibuat ulang.</div>
  <div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">Save Permanent DNA Karakter</button><button class="btn ghost" type="button" onclick="characterBibleView('${c.id}')">Cancel</button></div></form>`);
 }
 async function saveCharacterDNA(e,cid){
  e.preventDefault();let c=db.characters.find(x=>x.id===cid);if(!c)return;
- let before=JSON.parse(JSON.stringify(c)),f=new FormData(e.target),name=String(f.get('name')||'').trim(),appearance=String(f.get('appearance')||'').trim();
+ let before=JSON.parse(JSON.stringify(c)),beforeAssets=(db.assets||[]).map(a=>({...a})),f=new FormData(e.target),name=String(f.get('name')||'').trim(),appearance=String(f.get('appearance')||'').trim(),photo=f.get('referencePhoto');
  if(!name||!appearance){toast('Nama dan Permanent appearance wajib diisi');return}
+ if(photo&&photo.size>1200000){toast('Foto terlalu besar. Pilih gambar di bawah 1,2 MB.');return}
+ let photoData='';if(photo&&photo.size){try{photoData=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Foto gagal dibaca'));r.readAsDataURL(photo)})}catch(err){toast(err.message);return}}
  let projectId=String(f.get('project')||''),project=(db.projects||[]).find(p=>p.id===projectId);
  c.name=name;c.age=String(f.get('age')||'').trim();c.role=String(f.get('role')||'').trim();c.project=project?.title||'';
  c.appearance=appearance;c.personality=String(f.get('personality')||'').trim();c.voice=String(f.get('voice')||'').trim();c.consistencyRules=String(f.get('rules')||'').trim();
  c.permanentDNA={...(c.permanentDNA||{}),appearance:c.appearance,personality:c.personality,voice:c.voice,consistencyRules:c.consistencyRules};
+ if(photoData){db.assets=db.assets||[];db.assets.forEach(a=>{if(a.characterId===cid)a.isPrimary=false});let asset={id:id(),name:'Foto Referensi - '+name,data:photoData,category:'Character Reference',projectId,characterId:cid,isPrimary:true,notes:'Foto referensi utama karakter. Tidak mengubah Permanent DNA.',created:new Date().toISOString(),version:1,history:[]};db.assets.unshift(asset);c.assetIds=Array.from(new Set([...(c.assetIds||[]),asset.id]))}
  c.updated=new Date().toISOString();
- if(await saveAndWait()){toast('Permanent DNA Karakter berhasil diperbarui');characterBibleView(cid)}
- else{Object.keys(c).forEach(k=>delete c[k]);Object.assign(c,before);toast('Gagal menyimpan. Data karakter sebelumnya dipulihkan');editCharacterDNA(cid)}
+ if(await saveAndWait()){toast(photoData?'DNA dan foto referensi utama berhasil disimpan':'Permanent DNA Karakter berhasil diperbarui');characterBibleView(cid)}
+ else{Object.keys(c).forEach(k=>delete c[k]);Object.assign(c,before);db.assets=beforeAssets;toast('Gagal menyimpan. Data karakter dan foto sebelumnya dipulihkan');editCharacterDNA(cid)}
 }
 function openStudioModal(content){let root=document.getElementById('studioModalRoot');if(!root){root=document.createElement('div');root.id='studioModalRoot';document.body.appendChild(root)}root.innerHTML=`<div class="studio-modal-backdrop" onclick="if(event.target===this)closeStudioModal()"><section class="studio-modal" role="dialog" aria-modal="true">${content}</section></div>`;document.body.style.overflow='hidden'}
 function closeStudioModal(){let root=document.getElementById('studioModalRoot');if(root)root.innerHTML='';document.body.style.overflow=''}

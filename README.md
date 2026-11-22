@@ -118,3 +118,11 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Pengguna dapat membuka riwayat, melihat thumbnail versi lama, dan memulihkan versi yang dipilih. Gambar aktif saat pemulihan disimpan kembali sebagai versi riwayat.
 - Penggantian metadata tanpa mengganti file tidak membuat salinan gambar baru. Fitur ini adalah riwayat gambar per aset, bukan branching/duplikasi aset otomatis.
 - Validasi sintaks statis setelah implementasi: kedua blok JavaScript inline berhasil dikompilasi. Uji browser, kapasitas penyimpanan, dan backup/restore dengan kumpulan gambar nyata tetap diperlukan.
+
+## Visual Continuity Manager pada Scene Builder
+
+- Form scene memiliki bagian Visual Continuity untuk memilih scene acuan sebelumnya, aturan outfit, aturan lokasi, dan catatan kesinambungan visual.
+- Pengaturan disimpan pada `scene.continuityConfig` (`previousSceneId`, `outfitMode`, `locationMode`, `notes`) dan dimuat kembali saat scene diedit.
+- AI Video Studio membaca scene acuan yang disimpan pada konfigurasi scene (jika ada), lalu menyertakan ringkasan cast, outfit, lokasi, dan instruksi kontinuitas ke prompt.
+- Prompt menegaskan bahwa pilihan outfit yang secara eksplisit ditentukan pada scene saat ini tetap menjadi prioritas, sehingga kontinuitas tidak memaksa kostum lama jika cerita memang mengganti pakaian.
+- Validasi source statis: kedua blok JavaScript inline lolos pemeriksaan sintaks; pemeriksaan keberadaan panel, field, penyimpanan konfigurasi, dan prompt continuity berhasil. Belum dilakukan uji interaksi browser, Android/PWA, atau pengujian skenario lintas scene end-to-end.

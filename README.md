@@ -101,3 +101,11 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Draft gambar menyimpan `characterId`, `variationId`, dan `referenceAssetIds` agar pilihan DNA/outfit/referensi dapat dilacak dan digunakan kembali.
 - Prompt tetap berisi instruksi serta metadata referensi. Foto tidak otomatis dikirim ke penyedia AI eksternal; pengguna tetap perlu melampirkannya secara manual pada layanan gambar tujuan sampai tersedia integrasi provider/backend yang aman.
 - Pemeriksaan sintaks statis: dua blok JavaScript inline lolos. Belum dilakukan uji interaksi browser, backup/restore, atau uji Android/PWA.
+
+## Pengaitan aset ke outfit dan versi aset
+
+- Form Asset Library kini dapat menghubungkan aset ke variasi karakter tertentu melalui `variationId`, selain relasi `characterId`.
+- Daftar variasi pada form mengikuti karakter yang dipilih; perubahan karakter memperbarui pilihan variasi dan mempertahankan pilihan hanya jika masih valid.
+- Setiap penyimpanan aset mencatat nomor versi bertambah (`version`) sebagai penanda revisi metadata/gambar. Ini belum merupakan arsip historis multi-file; penggantian gambar tetap mengganti data pada aset yang sama.
+- AI Image Studio tidak lagi mencentang semua foto referensi secara otomatis. Pengguna memilih secara eksplisit foto yang akan dipakai dalam prompt; draft menyimpan ID yang dipilih.
+- Validasi sintaks statis ulang: kedua blok JavaScript inline berhasil dikompilasi dengan `new Function`. Pengujian UI, ekspor/restore, dan Android masih perlu dilakukan.

@@ -237,7 +237,7 @@ try{studioMode=localStorage.getItem('storymate_ui_mode_v1')==='advanced'?'advanc
 function applyStudioMode(){document.body.classList.toggle('simple-mode',studioMode==='simple');const b=document.getElementById('studioModeToggle');if(b)b.innerHTML=studioMode==='simple'?'MODE: <strong>SIMPLE</strong>':'MODE: <strong>ADVANCED</strong>'}
 function toggleStudioMode(){studioMode=studioMode==='simple'?'advanced':'simple';try{localStorage.setItem('storymate_ui_mode_v1',studioMode)}catch(e){}applyStudioMode();toast(studioMode==='simple'?'Simple Mode aktif. Pengaturan teknis ditangani otomatis.':'Advanced Mode aktif. Semua pengaturan teknis ditampilkan.')}
 function nav(p){page=p;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));document.getElementById('crumb').textContent=p.toUpperCase();render()}
-function toggleMore(){document.getElementById('moreMenu').classList.toggle('hidden')}
+function toggleMore(){const menu=document.getElementById('moreMenu');if(menu)menu.classList.toggle('hidden')}window.toggleMore=toggleMore;
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>nav(b.dataset.page)));
 function projectName(){return db.projects.find(p=>p.id===db.activeProject)?.title||'No project selected'}
 function header(kicker,title,desc,button=''){return `<div class="eyebrow">${kicker}</div><h1>${title}</h1><p class="sub">${desc}</p>${button}`}

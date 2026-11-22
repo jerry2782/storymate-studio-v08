@@ -174,3 +174,12 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Project Restore memvalidasi, mengganti episode project tujuan, membuat pemetaan ID bila terjadi benturan dengan episode milik project lain, dan memperbarui relasi episode pada scene yang diimpor.
 - Scene lama tanpa episode tetap didukung. Restore dari backup lama tanpa koleksi episode menghasilkan koleksi episode kosong.
 - Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi setelah perbaikan line-break. Belum dilakukan uji restore dengan file backup nyata, konflik ID lintas project, atau pengujian browser end-to-end.
+
+## Character DNA Multi-View Presets di AI Image Studio
+
+- Bagian sudut pandang Character DNA Visual Sheet menyediakan preset Paket Standar, Semua Full Body, Detail Wajah, Pilih Semua, dan Kosongkan.
+- Paket Standar memilih full-body front, left profile, right profile, rear, three-quarter, dan tight facial close-up.
+- Preset Detail Wajah mencakup chest-up portrait, close-up wajah depan, profil kiri/kanan, dan grid ekspresi.
+- Pilihan sudut pandang dan catatan lembar karakter disimpan pada metadata draft gambar (`selectedViews` dan `sheetNotes`) untuk membantu pelacakan konfigurasi prompt.
+- Hasil tetap berupa prompt berbahasa Inggris untuk layanan gambar eksternal. Satu lembar multi-view bergantung pada kemampuan layanan gambar; aplikasi ini belum menghasilkan file gambar secara langsung atau memecah hasil menjadi file terpisah.
+- Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi. Pengujian interaksi preset, pembuatan prompt dan penyimpanan draft pada browser nyata belum dilakukan.

@@ -81,6 +81,9 @@ h1{font-size:clamp(26px,4vw,38px);line-height:1.12;margin:5px 0 8px;letter-spaci
 /* V0.8.1 Simple / Advanced authoring modes */
 body.simple-mode #scene-production,
 body.simple-mode .scene-tabs a[href="#scene-production"],
+body.simple-mode #scene-beats .field:has(textarea[oninput*="description"]),
+body.simple-mode #scene-beats .field:has(input[oninput*="emotion"]),
+body.simple-mode #scene-dialogues .field:has(input[oninput*="delivery"]),
 body.simple-mode #scene-details .field:has(textarea[name="description"]),
 body.simple-mode #scene-beats .field:has(textarea[name="emotion"]),
 body.simple-mode #scene-beats .field:has(textarea[name="gesture"]),
@@ -362,6 +365,28 @@ function renderDialogueRows(){if(!sceneEditorDraft.dialogues.length)return '<div
 function addDialogueRow(){sceneEditorDraft.dialogues.push({id:id(),characterId:sceneEditorDraft.castIds[0]||'',text:'',delivery:''});renderDialogueRowsIntoDOM()}
 function updateDialogue(did,key,value){let d=sceneEditorDraft.dialogues.find(x=>x.id===did);if(d)d[key]=value}
 function removeDialogue(did){sceneEditorDraft.dialogues=sceneEditorDraft.dialogues.filter(x=>x.id!==did);renderDialogueRowsIntoDOM()}
+function inferBeatEmotion(beat){
+ const text=[beat?.title,beat?.description,beat?.action].filter(Boolean).join(' ').toLowerCase();
+ if(/menangis|air mata|terisak|kecewa|terluka|sedih|maaf|menyesal|bersalah/.test(text))return 'Hurt, sadness or regret; use restrained facial expression and natural pauses.';
+ if(/marah|membentak|berteriak|bertengkar|kesal/.test(text))return 'Frustrated or angry; controlled tension, firmer voice and natural gestures without exaggeration.';
+ if(/tersenyum|tertawa|bahagia|senang|lega/.test(text))return 'Warm, relieved or happy; subtle smile and relaxed body language.';
+ if(/takut|cemas|khawatir|ragu|gugup/.test(text))return 'Anxious or hesitant; subtle tension, brief pauses and restrained eye movement.';
+ if(/terkejut|kaget|heran/.test(text))return 'Surprised; a brief natural reaction before settling.';
+ if(/diam|mendengarkan|menatap|menunggu/.test(text))return 'Quiet, attentive and emotionally restrained; natural breathing and subtle eye contact.';
+ return 'Use a natural, emotionally restrained performance that matches the story context and the character personality.';
+}
+function inferDialogueDelivery(entry){
+ const t=String(entry?.text||'').toLowerCase();
+ if(/maaf|menyesal|bersalah|kecewa|terluka|sedih|rindu|menangis/.test(t))return 'Soft, sincere and emotionally restrained, with natural pauses and subtle vulnerability.';
+ if(/marah|jangan|berhenti|cukup|kenapa kamu/.test(t))return 'Firm and emotionally tense, but natural; avoid shouting unless explicitly required by the story.';
+ if(/terima kasih|aku sayang|cinta|bahagia|senang/.test(t))return 'Warm, gentle and sincere, with a natural conversational rhythm.';
+ if(/takut|khawatir|cemas|tidak tahu|bingung/.test(t))return 'Hesitant and concerned, with brief natural pauses and subtle uncertainty.';
+ return 'Natural conversational delivery in Bahasa Indonesia, with clear pronunciation, character-appropriate emotion and accurate lip synchronization.';
+}
+function inferBeatContext(beat,index){
+ const title=String(beat?.title||('Story Beat '+(index+1))).replace(/^Beat\s*\d+\s*[—:-]?\s*/i,'');
+ return title?('This moment focuses on '+title.toLowerCase()+'. Keep the action connected to the preceding and following story moments.'):'Continue the scene naturally, preserving the established story flow.';
+}
 function renderStoryBeats(){if(!sceneEditorDraft.beats.length)return '<div class="empty">Belum ada story beat. Tambahkan momen pertama untuk mulai menyusun alur.</div>';return sceneEditorDraft.beats.map((b,i)=>`<div class="editor-card"><div class="editor-card-head"><strong>Story Beat ${i+1}</strong><button type="button" class="btn small danger" onclick="removeStoryBeat('${b.id}')">Remove</button></div><div class="field"><label>Beat title</label><input value="${esc(b.title||'')}" oninput="updateStoryBeat('${b.id}','title',this.value)" placeholder="Contoh: Enzo notices Yuna at the door"></div><div class="field"><label>Moment context (optional)</label><textarea oninput="updateStoryBeat('${b.id}','description',this.value)" placeholder="Konteks singkat momen ini; jangan mengulang deskripsi aksi.">${esc(b.description||'')}</textarea></div><div class="field"><label>Character action / reaction</label><textarea oninput="updateStoryBeat('${b.id}','action',this.value)" placeholder="Tuliskan gerakan atau reaksi karakter pada momen ini.">${esc(b.action||'')}</textarea></div><div class="field"><label>Emotional change (optional)</label><input value="${esc(b.emotion||'')}" oninput="updateStoryBeat('${b.id}','emotion',this.value)" placeholder="Curious, surprised, relieved..."></div></div>`).join('')}
 function addStoryBeat(){sceneEditorDraft.beats.push({id:id(),title:`Story Beat ${sceneEditorDraft.beats.length+1}`,description:'',action:'',emotion:''});let el=document.getElementById('storyBeatList');if(el)el.innerHTML=renderStoryBeats()}
 function updateStoryBeat(bid,key,value){let b=sceneEditorDraft.beats.find(x=>x.id===bid);if(b)b[key]=value}
@@ -632,14 +657,14 @@ function buildVideoPrompt(){
   if(/^(after observing|enzo has|enzo reaches)\b/i.test(context))context='';
   if(context&&actionText&&normalizePromptText(context)===normalizePromptText(actionText))context='';
   let lines=[(i+1)+'. '+title];
-  if(context)lines.push('Moment context: '+context);
+  lines.push('Moment context: '+(context||inferBeatContext(b,i)));
   if(actionText)lines.push('Action: '+actionText);
-  if(b.emotion)lines.push('Emotional change: '+String(b.emotion).trim());
+  lines.push('Emotional direction: '+(b.emotion||inferBeatEmotion(b)));
   return lines.join('\n');
  }).join('\n\n');
  let dialogue=(s?.dialogueEntries||[]).map(d=>{
   let speaker=d.characterName||db.characters.find(c=>c.id===d.characterId)?.name||'Character';
-  return speaker+': "'+(d.text||'')+'"'+(d.delivery?' (Delivery: '+d.delivery+')':'');
+  return speaker+': "'+(d.text||'')+'" (Delivery: '+(d.delivery||inferDialogueDelivery(d))+')';
  }).join('\n');
  let beatActions=(s?.storyBeats||[]).flatMap(b=>[b.action,b.description]).filter(Boolean);
  let beatEmotions=(s?.storyBeats||[]).map(b=>b.emotion).filter(Boolean);

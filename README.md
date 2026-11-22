@@ -135,3 +135,12 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Pemeriksaan otomatis dijalankan saat pengguna membangun Video Master Prompt, dan dapat dijalankan manual melalui tombol.
 - Pemeriksaan bersifat rule-based berdasarkan data lokal yang tersimpan; belum menggunakan computer vision untuk membaca detail visual pada gambar.
 - Validasi statis: dua blok JavaScript inline lolos pemeriksaan sintaks. Pemeriksaan keberadaan panel, tombol, fungsi pemeriksa, serta kategori cast/outfit/lokasi/frame berhasil. Uji interaksi browser dan skenario lintas scene runtime belum dilakukan.
+
+## Shot List & Storyboard Manager
+
+- Setiap scene dapat memiliki daftar shot tersendiri pada `scene.shots`, dengan urutan, judul, durasi, framing, gerakan kamera, aksi/deskripsi, dialog berbahasa Indonesia, dan gambar storyboard opsional.
+- Form Scene Builder memuat Shot List & Storyboard; shot dapat ditambah, dihapus, dan diedit sebelum scene disimpan.
+- Gambar storyboard dibaca sebagai gambar, diperkecil maksimal sisi 1400 px, lalu disimpan sebagai JPEG data URL pada data scene. Pertimbangkan ukuran IndexedDB dan backup ketika mengunggah banyak gambar.
+- AI Video Studio memasukkan shot list ke Video Master Prompt sesuai urutan. Gambar storyboard tersimpan lokal; belum otomatis dikirim ke provider AI eksternal dan perlu dilampirkan manual bila provider mendukung image reference.
+- Shot list adalah bagian dari scene yang sudah ada; struktur hierarki episode terpisah belum dibuat pada tahap ini.
+- Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi setelah perbaikan separator prompt. Uji interaksi browser, penyimpanan gambar, dan backup/restore end-to-end masih diperlukan.

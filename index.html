@@ -550,7 +550,7 @@ function buildPrompt(){
  add('EMOTIONAL DIRECTION',v('pEmotion'));add('FACIAL EXPRESSION & GESTURES',v('pGesture'));
  add('DIALOGUE — SPOKEN IN INDONESIAN',v('pDialogue')||(scene?.dialogueEntries||[]).map(d=>(d.characterName||db.characters.find(z=>z.id===d.characterId)?.name||'Character')+': "'+d.text+'"').join('\n'));
  add('DIALOGUE DELIVERY',v('pDelivery'));
- let cam=[v('pShot')&&'Shot type: '+v('pShot'),v('pAngle')&&'Camera angle: '+v('pAngle'),v('pMovement')&&'Camera movement: '+v('pMovement'),v('pLens')&&'Lens / visual feel: '+v('pLens),v('pCamera')].filter(Boolean).join('\n');add('CAMERA DIRECTION',cam);
+ let cam=[v('pShot')&&'Shot type: '+v('pShot'),v('pAngle')&&'Camera angle: '+v('pAngle'),v('pMovement')&&'Camera movement: '+v('pMovement'),v('pLens')&&'Lens / visual feel: '+v('pLens'),v('pCamera')].filter(Boolean).join('\n');add('CAMERA DIRECTION',cam);
  let aud=[v('pMusic')&&'Music: '+v('pMusic'),v('pAmbience')&&'Ambience: '+v('pAmbience'),v('pSfx')&&'Sound effects: '+v('pSfx'),v('pAudio')].filter(Boolean).join('\n');add('AUDIO DIRECTION',aud);
  add('NEGATIVE PROMPT / AVOID',v('pNegative'));
  lines.push('CONTINUITY REQUIREMENTS\nPreserve the approved identity, facial features, hairstyle, body proportions, costume and voice of EVERY selected character independently. Never merge, swap, duplicate or alter character identities. Preserve location layout, lighting logic and established visual style. Do not introduce unapproved changes. Maintain natural movement, coherent physics, stable props and cinematic composition.');

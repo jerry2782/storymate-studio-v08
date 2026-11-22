@@ -85,3 +85,11 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - AI Image Studio menambahkan tugas Character Outfit Reference Sheet dengan instruksi tampilan depan/samping/belakang dan detail bahan/aksesori, serta identity lock agar perubahan hanya berlaku pada pakaian dan aksesori.
 - Label dan kontrol utama AI Image Studio yang tersisa dipoles ke Bahasa Indonesia; hasil prompt tetap English.
 - Pemeriksaan sintaks statis ulang terhadap dua blok JavaScript inline berhasil (`new Function`), tanpa error sintaks. Ini bukan pengganti pengujian interaksi browser atau Android.
+
+## Integrasi Visual Reference Character Bible dan Asset Library
+
+- Kategori Asset Library diperluas untuk Character Reference, Outfit Reference, Full Body Reference, Facial Reference, Character DNA Sheet, Costume, Location Reference, dan aset produksi lainnya.
+- Profil Character Bible menampilkan preview gambar untuk setiap aset yang tertaut, beserta kategori, nama, dan catatan aset.
+- Tombol Tambah Referensi dari profil karakter membuka Asset Library dengan karakter terkait terpilih otomatis pada form aset baru.
+- Relasi aset pada Character ID tetap disinkronkan melalui `characterId` dan `assetIds`; penambahan aset menormalkan `assetIds` untuk karakter lama yang belum memiliki array tersebut.
+- Validasi source statis terbaru: kedua blok JavaScript inline lolos pemeriksaan sintaks; pemeriksaan keberadaan kategori, preview, prefill relasi, dan outfit lock juga lolos. Uji interaksi dan backup/restore end-to-end masih harus dilakukan.

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'storymate-studio-v0.8.4.10-character-cards';
+const CACHE_NAME = 'storymate-studio-v0.8.4.11-character-layout';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

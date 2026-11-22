@@ -148,7 +148,7 @@ body.simple-mode .simple-director-note{display:block}
 </div>
 <div id="toast" class="toast hidden"></div>
 <script>
-const APP_VERSION='0.8.3.0', BACKUP_SCHEMA=3, KEY='storymate_studio_v01', IDB_NAME='storymate_studio_persistent_v1', IDB_STORE='workspace';
+const APP_VERSION='0.8.4.0', BACKUP_SCHEMA=3, KEY='storymate_studio_v01', IDB_NAME='storymate_studio_persistent_v1', IDB_STORE='workspace';
 const blank=()=>({projects:[],characters:[],locations:[],scenes:[],assets:[],stories:[],generations:[],production:{},activeProject:''});
 let db=blank(),idb=null,storageState={mode:'checking',message:'Memeriksa penyimpanan perangkat…',lastSave:''};
 let page='dashboard',promptResult='',assetEditingId='';
@@ -401,7 +401,7 @@ function developSixEpisodeSeries(storyId){
  saveAndWait().then(ok=>{if(!ok){Object.assign(st,previous);if(el)el.innerHTML=renderStoryBlueprint(st);toast('Gagal menyimpan revisi. Blueprint sebelumnya dipulihkan.');return}toast('Story Blueprint diperbarui menjadi serial 6 episode')}).catch(()=>{Object.assign(st,previous);if(el)el.innerHTML=renderStoryBlueprint(st);toast('Penyimpanan gagal. Blueprint sebelumnya dipulihkan.')});
 }
 function renderStoryBlueprint(st){
- return '<div class="panel"><div class="sectionhead"><div><div class="eyebrow">STORY DEVELOPMENT RESULT</div><h2>'+esc(st.title)+'</h2></div><span class="tag">DRAFT</span></div><p class="muted">'+esc(st.format)+' · '+esc(st.genre)+' · '+esc(st.tone)+'</p><div class="actions"><button class="btn small" onclick="copyText(document.getElementById(\'storyBlueprintText\').textContent)">Copy Blueprint</button><button class="btn small" onclick="viewStoryBlueprint(\''+st.id+'\')">Full View</button><button class="btn small primary" onclick="developSixEpisodeSeries(\\'${st.id}\\')">Develop 6-Episode Series</button></div><div class="promptout" id="storyBlueprintText">'+esc(st.outline)+'</div></div>';
+ return '<div class="panel"><div class="sectionhead"><div><div class="eyebrow">STORY DEVELOPMENT RESULT</div><h2>'+esc(st.title)+'</h2></div><span class="tag">DRAFT</span></div><p class="muted">'+esc(st.format)+' · '+esc(st.genre)+' · '+esc(st.tone)+'</p><div class="actions"><button class="btn small" onclick="copyText(document.getElementById(\\'storyBlueprintText\\').textContent)">Copy Blueprint</button><button class="btn small" onclick="viewStoryBlueprint(\\''+st.id+'\\')">Full View</button><button class="btn small primary" onclick="developSixEpisodeSeries(\\''+st.id+'\\')">Develop 6-Episode Series</button></div><div class="promptout" id="storyBlueprintText">'+esc(st.outline)+'</div></div>';
 }
 function buildStoryBreakdown(storyId){
  const st=db.stories.find(x=>x.id===storyId);if(!st)return;

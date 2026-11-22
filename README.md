@@ -77,3 +77,11 @@ Upload the contents of this folder to the root of a GitHub repository and enable
 - Tahap F — quality assurance: syntax check, uji browser, Android/PWA, cache, backup/restore, dan regresi sebelum rilis.
 
 Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runtime di perangkat Android dan deployment HTTPS.
+
+## Catatan pekerjaan lanjutan
+
+- Outfit/Kostum ditetapkan sebagai variasi karakter yang dapat digunakan ulang dan tidak mengubah Permanent Character DNA.
+- Kategori variasi karakter ditambah dengan Outfit/Kostum, Ekspresi, Usia Cerita, Kondisi Fisik, Gaya Rambut Sementara, dan Aksesori.
+- AI Image Studio menambahkan tugas Character Outfit Reference Sheet dengan instruksi tampilan depan/samping/belakang dan detail bahan/aksesori, serta identity lock agar perubahan hanya berlaku pada pakaian dan aksesori.
+- Label dan kontrol utama AI Image Studio yang tersisa dipoles ke Bahasa Indonesia; hasil prompt tetap English.
+- Pemeriksaan sintaks statis ulang terhadap dua blok JavaScript inline berhasil (`new Function`), tanpa error sintaks. Ini bukan pengganti pengujian interaksi browser atau Android.

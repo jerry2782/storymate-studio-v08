@@ -48,3 +48,32 @@ This is an active release candidate, **not yet declared production-ready**. It h
 ## Deploy for final testing
 
 Upload the contents of this folder to the root of a GitHub repository and enable GitHub Pages on the `main` branch/root. Test the deployed HTTPS URL in Android Chrome before relying on it for real production work. Keep regular JSON backups.
+
+## Audit arsitektur dan rencana penyempurnaan V0.8.5.0
+
+### Temuan dari pemeriksaan source saat ini
+- Aplikasi masih berupa PWA statis satu halaman (`index.html`) dengan navigasi berbasis renderer halaman dan penyimpanan lokal melalui IndexedDB serta fallback/migrasi localStorage.
+- Data inti telah dipisah menjadi proyek, karakter, variasi karakter, lokasi, scene, aset, cerita, dan prompt/job; hubungan karakter-aset menggunakan `characterId` dan `assetIds`.
+- Character Bible sudah memisahkan Permanent DNA dari variasi. Kategori outfit/kostum kini menjadi variasi yang dapat digunakan ulang; AI Image Studio memiliki prompt khusus lembar referensi outfit yang mengunci identitas karakter.
+- AI Image Studio dan AI Video Studio saat ini menyusun prompt dan menyimpan draft/job. Keduanya belum menjalankan generasi gambar/video secara langsung; koneksi provider memerlukan backend aman.
+- Aset gambar disimpan sebagai data URL dalam Asset Library dan batas upload yang terlihat di alur aset adalah 1,2 MB per gambar. Backup JSON mencakup data aset; ukuran backup dapat membesar jika banyak gambar dimasukkan.
+- Service worker menggunakan cache app-shell. Perubahan aplikasi harus diikuti pengujian pembaruan cache di browser/PWA.
+
+### Risiko dan hal yang perlu diperbaiki
+1. Lokalisasi belum menyeluruh: sejumlah modul, tombol, label, status, dan istilah masih berbahasa Inggris.
+2. Pola panduan field belum konsisten; beberapa kolom hanya memiliki placeholder atau belum memiliki contoh.
+3. Kontrol hybrid belum diterapkan seragam. Kamera, pencahayaan, komposisi, gerakan, audio, dan opsi produksi perlu pilihan terstruktur dengan ruang instruksi manual.
+4. Character DNA Visual Sheet dan Outfit Reference Sheet saat ini menghasilkan prompt. Perlu membedakan secara eksplisit satu contact sheet dengan beberapa gambar terpisah; hasil gambar masih dibuat di layanan eksternal.
+5. Foto referensi dan aset perlu diuji untuk ukuran, kompresi, relasi karakter, penghapusan aman, backup/restore, dan pemulihan jika transaksi penyimpanan gagal.
+6. Perlu uji regresi terhadap project/scene/variation/asset IDs, ekspor-impor backup, project backup/restore, dan relasi antar modul.
+7. Perlu uji nyata di Android Chrome/PWA HTTPS, termasuk refresh service worker dan perilaku penyimpanan perangkat.
+
+### Urutan refactor yang disarankan
+- Tahap A — stabilisasi: audit struktur data, validasi input, relasi dan transaksi penyimpanan, serta backup/restore.
+- Tahap B — pengalaman Indonesia: lokalisasi seluruh UI dan tambahkan petunjuk/contoh pada setiap field.
+- Tahap C — sistem visual karakter: Permanent DNA, outfit/variasi, foto referensi, multi-view, dan aturan identity lock.
+- Tahap D — sistem produksi hybrid: dropdown/multi-select/input manual untuk kamera, lighting, audio, gerak, dan parameter produksi.
+- Tahap E — kesinambungan produksi: pastikan Scene Builder mengirim referensi karakter, outfit, lokasi, aset, dan arahan yang konsisten ke prompt gambar/video.
+- Tahap F — quality assurance: syntax check, uji browser, Android/PWA, cache, backup/restore, dan regresi sebelum rilis.
+
+Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runtime di perangkat Android dan deployment HTTPS.

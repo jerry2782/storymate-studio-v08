@@ -1,4 +1,4 @@
-const CACHE_NAME = 'storymate-studio-v0.8.4.2-render-diagnostics';
+const CACHE_NAME = 'storymate-studio-v0.8.4.3-global-error-overlay';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

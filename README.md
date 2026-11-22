@@ -126,3 +126,12 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - AI Video Studio membaca scene acuan yang disimpan pada konfigurasi scene (jika ada), lalu menyertakan ringkasan cast, outfit, lokasi, dan instruksi kontinuitas ke prompt.
 - Prompt menegaskan bahwa pilihan outfit yang secara eksplisit ditentukan pada scene saat ini tetap menjadi prioritas, sehingga kontinuitas tidak memaksa kostum lama jika cerita memang mengganti pakaian.
 - Validasi source statis: kedua blok JavaScript inline lolos pemeriksaan sintaks; pemeriksaan keberadaan panel, field, penyimpanan konfigurasi, dan prompt continuity berhasil. Belum dilakukan uji interaksi browser, Android/PWA, atau pengujian skenario lintas scene end-to-end.
+
+## Scene-to-Scene Continuity Checker
+
+- AI Video Studio memiliki panel hasil pemeriksaan kontinuitas dan tombol `Periksa Kontinuitas`.
+- Pemeriksaan membandingkan daftar cast, variasi/outfit tersimpan, lokasi, catatan kontinuitas scene tujuan, dan keberadaan frame terakhir dari scene acuan.
+- Hasil diklasifikasikan sebagai sesuai, perubahan terdeteksi, atau perlu perhatian. Perubahan cast/outfit/lokasi bukan otomatis kesalahan; pengguna harus menilai kesesuaiannya dengan cerita.
+- Pemeriksaan otomatis dijalankan saat pengguna membangun Video Master Prompt, dan dapat dijalankan manual melalui tombol.
+- Pemeriksaan bersifat rule-based berdasarkan data lokal yang tersimpan; belum menggunakan computer vision untuk membaca detail visual pada gambar.
+- Validasi statis: dua blok JavaScript inline lolos pemeriksaan sintaks. Pemeriksaan keberadaan panel, tombol, fungsi pemeriksa, serta kategori cast/outfit/lokasi/frame berhasil. Uji interaksi browser dan skenario lintas scene runtime belum dilakukan.

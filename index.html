@@ -885,7 +885,7 @@ let continuitySource=s?.continuityConfig?.previousSceneId?db.scenes.find(x=>x.id
  let known=new Set([...storyContext,...visualSetup,...beatActions,...beatEmotions,...sceneActions,...sceneEmotions,...sceneGestures,...cameraParts,...audioParts,...(s?[s.dialogue,s.delivery]:[])].filter(Boolean).map(norm));
  additional=additional.split(/\n+/).map(x=>x.trim()).filter(x=>x&&!known.has(norm(x))).join('\n');
  let sceneDirection=[...sceneActions.map(x=>'Character action: '+x),...sceneEmotions.map(x=>'Emotional direction: '+x),...sceneGestures.map(x=>'Facial expression and gestures: '+x)].join('\n');
- let negative=v('vidNegative')||'Face distortion, identity drift, inconsistent facial features, changing hairstyle, changing skin tone, incorrect body proportions, wardrobe changes, extra fingers, extra limbs, duplicate characters, unnatural motion, flickering, blurry details, unstable camera, warped background, sudden lighting changes, unrealistic physics.';
+ let shotTimeline=(s?.shots||[]).map((shot,i)=>'SHOT '+(i+1)+' — '+(shot.title||'Untitled shot')+' ('+(shot.duration||'Unspecified')+' seconds)\\nFraming: '+(shot.framing||'Use cinematic framing appropriate to the action')+'\\nCamera: '+(shot.camera||'Natural motivated camera movement')+'\\nAction: '+(shot.action||'Follow scene action')+'\\nDialogue (Bahasa Indonesia): '+(shot.dialogue||'No dialogue')+'\\nStoryboard image: '+(shot.image?'A storyboard reference image is saved in this scene; attach it manually to the external AI provider if visual guidance is required.':'No storyboard image attached.')).join('\\n\\n');\n let negative=v('vidNegative')||'Face distortion, identity drift, inconsistent facial features, changing hairstyle, changing skin tone, incorrect body proportions, wardrobe changes, extra fingers, extra limbs, duplicate characters, unnatural motion, flickering, blurry details, unstable camera, warped background, sudden lighting changes, unrealistic physics.';
  let out=[
   'AI VIDEO MASTER PRODUCTION PROMPT',
   'PROJECT: '+(project?.title||'Unassigned'),
@@ -904,6 +904,7 @@ let continuitySource=s?.continuityConfig?.previousSceneId?db.scenes.find(x=>x.id
   'STORY CONTEXT / NARRATIVE PURPOSE:\n'+(storyContext.join('\n')||'No additional story context supplied.'),
   'VISUAL SETUP / INITIAL FRAME:\n'+(visualSetup.join('\n')||(continuity?'Recreate the opening composition from the uploaded previous-scene final frame. Preserve exact blocking, eyelines, screen positions, costume and room geography.':'AI Director: establish a clear cinematic opening composition from the selected characters, DNA Lokasi and story context. Choose natural character positions and readable staging; do not invent changes to established character identity or location.')),
   'STORY BEATS / ACTION TIMELINE:\n'+(beats||'No story beats registered.'),
+  'SHOT LIST / STORYBOARD TIMELINE:\n'+(shotTimeline||'No individual shots defined. Follow the scene-level action timeline.'),
   'DIALOGUE TIMELINE — SPOKEN IN BAHASA INDONESIA:\n'+(dialogue||'No dialogue specified.'),
   'ADDITIONAL SCENE DIRECTION:\n'+(sceneDirection||'No additional scene description supplied.'),
   'CAMERA DIRECTION:\n'+(cameraParts.join('\n')||'No specific camera direction supplied.'),

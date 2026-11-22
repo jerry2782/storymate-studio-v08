@@ -839,6 +839,17 @@ function render(){try{applyStudioMode();let v=document.getElementById('view');if
 bootStorage();
 </script>
 <script>
+(function(){
+ function showFatal(label,detail){
+  try{
+   let box=document.getElementById('storymate-fatal-diagnostic');
+   if(!box){box=document.createElement('section');box.id='storymate-fatal-diagnostic';box.style.cssText='position:fixed;z-index:999999;left:12px;right:12px;top:90px;max-height:65vh;overflow:auto;padding:18px;border:2px solid #ff7777;border-radius:14px;background:#24131b;color:#fff;font:14px/1.5 monospace;box-shadow:0 8px 30px #000';document.body.appendChild(box)}
+   box.innerHTML='<b>STORYMATE mendeteksi error saat memuat aplikasi</b><p>'+String(label).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})+'</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+String(detail||'Tidak ada detail').replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})+'</pre><p>Kirim screenshot pesan ini kepada Sol. Data tidak dihapus.</p>';
+  }catch(ignore){}
+ }
+ window.addEventListener('error',function(e){showFatal('JavaScript error',((e.message||'Unknown error')+' | '+(e.filename||'')+':'+(e.lineno||'')))});
+ window.addEventListener('unhandledrejection',function(e){showFatal('Unhandled promise rejection',e.reason&& (e.reason.stack||e.reason.message)||String(e.reason))});
+})();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {

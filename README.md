@@ -144,3 +144,13 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - AI Video Studio memasukkan shot list ke Video Master Prompt sesuai urutan. Gambar storyboard tersimpan lokal; belum otomatis dikirim ke provider AI eksternal dan perlu dilampirkan manual bila provider mendukung image reference.
 - Shot list adalah bagian dari scene yang sudah ada; struktur hierarki episode terpisah belum dibuat pada tahap ini.
 - Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi setelah perbaikan separator prompt. Uji interaksi browser, penyimpanan gambar, dan backup/restore end-to-end masih diperlukan.
+
+## Storyboard Visual Board, duration summary, dan export
+
+- Menu Scene & Story Builder menampilkan Storyboard Visual Board yang mengumpulkan shot dari seluruh scene, diurutkan berdasarkan nomor scene dan urutan shot.
+- Setiap kartu menampilkan gambar storyboard bila tersedia, judul scene/shot, durasi, framing, kamera, aksi, dan dialog.
+- Ringkasan menghitung jumlah shot, jumlah scene yang memiliki shot, dan total durasi berdasarkan penjumlahan durasi shot yang valid secara numerik.
+- Tombol Export / Print Storyboard membuka dokumen HTML siap cetak dengan grid dua kolom; pengguna dapat memilih Save as PDF pada dialog cetak browser.
+- Ekspor menggunakan gambar yang tersimpan di data scene. Browser harus mengizinkan pop-up untuk membuka lembar cetak.
+- Hierarki Episode terpisah belum dibuat; storyboard board saat ini mengelompokkan dan mengurutkan data berdasarkan scene yang ada.
+- Validasi sintaks statis: dua blok JavaScript inline berhasil dikompilasi. Uji tampilan responsif, pop-up/print, serta cetak PDF pada Android dan desktop belum dilakukan.

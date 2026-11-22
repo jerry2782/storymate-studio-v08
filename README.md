@@ -8,6 +8,17 @@ Mobile-first PWA for story development and AI film-production prompt preparation
 - Scope Story Blueprint output element IDs to each story record to prevent ambiguous DOM lookups as the renderer evolves.
 - Preserve existing local storage keys and backup schema; this release does not reset or migrate user data.
 
+
+## Keputusan desain V0.8.5.0
+
+- Antarmuka, navigasi, label, petunjuk, contoh, dan notifikasi menggunakan Bahasa Indonesia.
+- Bahasa keluaran prompt gambar/video tetap English.
+- Pola pengisian hybrid: dropdown untuk pilihan tunggal, multi-select untuk opsi yang dapat digabung, dan input manual untuk arahan khusus.
+- Setiap kolom perlu petunjuk singkat serta contoh yang relevan.
+- Character Bible mendukung foto referensi dari galeri/kamera. Foto disimpan sebagai Character Reference Asset yang tertaut ke karakter, masuk dalam backup JSON yang sudah mencakup Asset Library, dan tidak mengubah Permanent Character DNA.
+- Foto awal dibatasi 1,2 MB per gambar sesuai batas Asset Library yang sudah ada.
+- Perubahan harus mempertahankan ID karakter, relasi aset, skema backup, dan penyimpanan lokal.
+
 ## Current release status
 
 This is an active release candidate, **not yet declared production-ready**. It has passed source syntax checks and targeted browser interaction tests, but still requires testing on the actual Android Chrome/PWA installation and a real HTTPS deployment before public release.

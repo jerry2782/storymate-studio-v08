@@ -154,3 +154,14 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Ekspor menggunakan gambar yang tersimpan di data scene. Browser harus mengizinkan pop-up untuk membuka lembar cetak.
 - Hierarki Episode terpisah belum dibuat; storyboard board saat ini mengelompokkan dan mengurutkan data berdasarkan scene yang ada.
 - Validasi sintaks statis: dua blok JavaScript inline berhasil dikompilasi. Uji tampilan responsif, pop-up/print, serta cetak PDF pada Android dan desktop belum dilakukan.
+
+## Episode Manager dan relasi Project → Episode → Scene → Shot
+
+- Workspace data model menambahkan koleksi `episodes`; normalisasi menjaga koleksi ini tetap berupa array dan membersihkan `projectId` episode yang tidak lagi valid.
+- Episode memiliki ID, `projectId`, nomor, judul, status, sinopsis, timestamp pembuatan, dan pembaruan. Nomor episode harus unik dalam project yang sama.
+- Menu Proyek Saya menyediakan Episode Manager untuk membuat, mengedit, dan menghapus episode. Episode yang masih memiliki scene tidak dapat dihapus sebelum scene dipindahkan.
+- Scene Builder menyediakan pilihan episode yang difilter berdasarkan project terpilih. Perubahan project memperbarui pilihan episode.
+- Scene menyimpan `episodeId` hanya jika episode tersebut benar-benar milik project yang dipilih. Scene lama yang tidak memiliki episode tetap valid dan tidak otomatis dipindahkan atau diubah.
+- Normalisasi mempertahankan relasi episode yang valid; relasi episode yang tidak cocok dengan project scene akan dikosongkan tanpa menghapus scene atau shot.
+- Struktur episode masih berupa pengelompokan metadata di atas scene yang sudah ada; tidak ada duplikasi atau pemindahan isi scene/shot.
+- Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi. Uji CRUD di browser, pergantian project, backup/restore dengan episode, dan migrasi data nyata masih diperlukan.

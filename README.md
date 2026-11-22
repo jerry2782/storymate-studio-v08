@@ -93,3 +93,11 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Tombol Tambah Referensi dari profil karakter membuka Asset Library dengan karakter terkait terpilih otomatis pada form aset baru.
 - Relasi aset pada Character ID tetap disinkronkan melalui `characterId` dan `assetIds`; penambahan aset menormalkan `assetIds` untuk karakter lama yang belum memiliki array tersebut.
 - Validasi source statis terbaru: kedua blok JavaScript inline lolos pemeriksaan sintaks; pemeriksaan keberadaan kategori, preview, prefill relasi, dan outfit lock juga lolos. Uji interaksi dan backup/restore end-to-end masih harus dilakukan.
+
+## Pemilihan referensi visual di AI Image Studio
+
+- AI Image Studio menampilkan daftar aset visual milik karakter terpilih dengan thumbnail, nama, dan kategori.
+- Pengguna dapat memilih secara eksplisit aset referensi yang akan dicantumkan dalam prompt; pilihan kosong berarti tidak menyertakan aset referensi karakter.
+- Draft gambar menyimpan `characterId`, `variationId`, dan `referenceAssetIds` agar pilihan DNA/outfit/referensi dapat dilacak dan digunakan kembali.
+- Prompt tetap berisi instruksi serta metadata referensi. Foto tidak otomatis dikirim ke penyedia AI eksternal; pengguna tetap perlu melampirkannya secara manual pada layanan gambar tujuan sampai tersedia integrasi provider/backend yang aman.
+- Pemeriksaan sintaks statis: dua blok JavaScript inline lolos. Belum dilakukan uji interaksi browser, backup/restore, atau uji Android/PWA.

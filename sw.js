@@ -1,4 +1,4 @@
-const CACHE_NAME = 'storymate-studio-v0.8.4.6-js-syntax-fix';
+const CACHE_NAME = 'storymate-studio-v0.8.4.7-multi-character-reference';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

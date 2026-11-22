@@ -673,7 +673,9 @@ async function projectRestore(e,targetPid){
    const remap=(arr,oldIds,newItems)=>[...arr.filter(x=>!oldIds.has(x.id)),...newItems];
    const retainedIds=group=>new Set(db[group].filter(x=>!({projects:new Set([targetPid]),episodes:oldEpisodeIds,characters:oldCharacterIds,locations:oldLocationIds,scenes:oldSceneIds,assets:oldAssetIds,stories:new Set(db.stories.filter(x=>x.projectId===targetPid).map(x=>x.id)),generations:new Set(db.generations.filter(x=>x.projectId===targetPid||oldSceneIds.has(x.sceneId)).map(x=>x.id))}[group]).has(x.id)).map(x=>x.id));
    const makeIdMap=(items,retained)=>{const map={};items.forEach(item=>{if(retained.has(item.id))map[item.id]=id()});return map};
-   const episodeMap=makeIdMap(incoming.episodes,retainedIds('episodes'));\n   const episodeId=old=>episodeMap[old]||old;\n   const charMap=makeIdMap(incoming.characters,retainedIds('characters'));
+   const episodeMap=makeIdMap(incoming.episodes,retainedIds('episodes'));
+   const episodeId=old=>episodeMap[old]||old;
+   const charMap=makeIdMap(incoming.characters,retainedIds('characters'));
    const locMap=makeIdMap(incoming.locations,retainedIds('locations'));
    const sceneMap=makeIdMap(incoming.scenes,retainedIds('scenes'));
    const assetMap=makeIdMap(incoming.assets,retainedIds('assets'));
@@ -685,7 +687,8 @@ async function projectRestore(e,targetPid){
    const importedAdegan=incoming.scenes.map(sc=>{const variations={...(sc.variationIds||sc.characterVariations||{})};const remappedVariations={};Object.entries(variations).forEach(([cid,vid])=>remappedVariations[charId(cid)]=vid);return {...sc,id:sceneId(sc.id),projectId:targetPid,episodeId:sc.episodeId?episodeId(sc.episodeId):'',locationId:sc.locationId?locId(sc.locationId):'',characterId:sc.characterId?charId(sc.characterId):'',castIds:(sc.castIds||[]).map(charId),assetIds:(sc.assetIds||[]).map(assetId),variationIds:remappedVariations,dialogueEntries:(sc.dialogueEntries||[]).map(d=>({...d,characterId:d.characterId?charId(d.characterId):''}))}});
    const newCharIds=new Set(importedKarakter.map(c=>c.id));
    const newLocationIds=new Set(importedLokasi.map(l=>l.id));
-   db.episodes=remap(db.episodes,oldEpisodeIds,importedEpisodes);\n   db.characters=remap(db.characters,oldCharacterIds,importedKarakter);
+   db.episodes=remap(db.episodes,oldEpisodeIds,importedEpisodes);
+   db.characters=remap(db.characters,oldCharacterIds,importedKarakter);
    db.locations=remap(db.locations,oldLocationIds,importedLokasi);
    db.scenes=remap(db.scenes,oldSceneIds,importedAdegan);
    db.assets=remap(db.assets,oldAssetIds,importedAssets);

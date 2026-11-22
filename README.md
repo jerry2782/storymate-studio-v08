@@ -165,3 +165,12 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Normalisasi mempertahankan relasi episode yang valid; relasi episode yang tidak cocok dengan project scene akan dikosongkan tanpa menghapus scene atau shot.
 - Struktur episode masih berupa pengelompokan metadata di atas scene yang sudah ada; tidak ada duplikasi atau pemindahan isi scene/shot.
 - Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi. Uji CRUD di browser, pergantian project, backup/restore dengan episode, dan migrasi data nyata masih diperlukan.
+
+## Audit dan perbaikan Backup/Restore untuk Episode Manager
+
+- Full Backup menambahkan koleksi `episodes` sebagai koleksi opsional agar backup lama tanpa episode tetap dapat dipulihkan.
+- Full Restore memvalidasi ID episode, menormalkan projectId episode, dan mempertahankan `episodeId` scene hanya bila episode tersebut cocok dengan project scene.
+- Project Backup hanya membawa episode milik project yang dipilih.
+- Project Restore memvalidasi, mengganti episode project tujuan, membuat pemetaan ID bila terjadi benturan dengan episode milik project lain, dan memperbarui relasi episode pada scene yang diimpor.
+- Scene lama tanpa episode tetap didukung. Restore dari backup lama tanpa koleksi episode menghasilkan koleksi episode kosong.
+- Validasi sintaks statis: kedua blok JavaScript inline berhasil dikompilasi setelah perbaikan line-break. Belum dilakukan uji restore dengan file backup nyata, konflik ID lintas project, atau pengujian browser end-to-end.

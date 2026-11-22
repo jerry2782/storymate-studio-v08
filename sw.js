@@ -1,4 +1,4 @@
-const CACHE_NAME = 'storymate-studio-v0.8.2.0-story-engine';
+const CACHE_NAME = 'storymate-studio-v0.8.3.0-story-breakdown';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

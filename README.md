@@ -109,3 +109,12 @@ Audit ini merupakan pemeriksaan source statis; belum menggantikan pengujian runt
 - Setiap penyimpanan aset mencatat nomor versi bertambah (`version`) sebagai penanda revisi metadata/gambar. Ini belum merupakan arsip historis multi-file; penggantian gambar tetap mengganti data pada aset yang sama.
 - AI Image Studio tidak lagi mencentang semua foto referensi secara otomatis. Pengguna memilih secara eksplisit foto yang akan dipakai dalam prompt; draft menyimpan ID yang dipilih.
 - Validasi sintaks statis ulang: kedua blok JavaScript inline berhasil dikompilasi dengan `new Function`. Pengujian UI, ekspor/restore, dan Android masih perlu dilakukan.
+
+## Referensi utama dan riwayat visual aset
+
+- Form aset menyediakan pilihan `Jadikan referensi utama karakter`. Hanya satu aset per karakter yang ditandai sebagai referensi utama; penetapan baru menonaktifkan penanda utama pada aset lain milik karakter yang sama.
+- Asset Library menampilkan status referensi utama, versi aktif, dan jumlah versi lama.
+- Saat file gambar pada aset yang sama diganti, gambar sebelumnya disimpan ke `history` dengan nomor versi dan timestamp. Riwayat dibatasi maksimal 10 versi per aset untuk mengendalikan ukuran IndexedDB/backup.
+- Pengguna dapat membuka riwayat, melihat thumbnail versi lama, dan memulihkan versi yang dipilih. Gambar aktif saat pemulihan disimpan kembali sebagai versi riwayat.
+- Penggantian metadata tanpa mengganti file tidak membuat salinan gambar baru. Fitur ini adalah riwayat gambar per aset, bukan branching/duplikasi aset otomatis.
+- Validasi sintaks statis setelah implementasi: kedua blok JavaScript inline berhasil dikompilasi. Uji browser, kapasitas penyimpanan, dan backup/restore dengan kumpulan gambar nyata tetap diperlukan.

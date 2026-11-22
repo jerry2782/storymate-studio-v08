@@ -159,7 +159,7 @@ async function bootStorage(){
  let legacy=null,legacyError='';
  try{const raw=localStorage.getItem(KEY);if(raw){legacy=JSON.parse(raw);if(!legacy||typeof legacy!=='object'||Array.isArray(legacy))throw new Error('Format localStorage lama tidak valid')}}catch(e){legacyError=e?.message||'Data lama tidak dapat dibaca'}
  try{
-  await openPersistentDB();let stored=await idbGet();
+  await Promise.race([openPersistentDB(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Penyimpanan browser terlalu lama merespons (timeout 8 detik)')),8000))]);let stored=await Promise.race([idbGet(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Pembacaan database terlalu lama merespons (timeout 8 detik)')),8000))]);
   if(stored&&stored.data){
    db=normalizeWorkspaceData(stored.data);
    storageState={mode:'indexeddb',message:'IndexedDB aktif. Data utama dipulihkan dari database browser.',lastSave:stored.savedAt||''};
